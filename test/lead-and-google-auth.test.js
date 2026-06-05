@@ -38,6 +38,7 @@ test('google callback exchanges code and returns token + saEmail in popup HTML',
 test('lead relay appends the row then reads Config (no CAPI when unset)', async () => {
   const fx = installFetch([
     { body: { access_token: 'ya29.SA' } },        // SA token
+    { body: {} },                                 // ensureTab Orders
     { body: { updates: { updatedRows: 1 } } },    // append
     { body: { values: [] } },                     // Config read -> empty
   ]);
@@ -48,14 +49,15 @@ test('lead relay appends the row then reads Config (no CAPI when unset)', async 
   fx.restore();
   assert.equal(res.statusCode, 200);
   assert.match(res.body, /ok":true/);
-  assert.match(fx.calls[1].url, /spreadsheets\/SHEET9\/values\/Orders!A1:append/);
-  assert.ok(JSON.parse(fx.calls[1].opts.body).values[0].includes('Nguyen'));
-  assert.match(fx.calls[2].url, /values\/Config!A:B/);
+  assert.match(fx.calls[2].url, /spreadsheets\/SHEET9\/values\/Orders!A1:append/);
+  assert.ok(JSON.parse(fx.calls[2].opts.body).values[0].includes('Nguyen'));
+  assert.match(fx.calls[3].url, /values\/Config!A:B/);
 });
 
 test('lead relay fires Meta CAPI with dedup event_id when Config has tokens', async () => {
   const fx = installFetch([
     { body: { access_token: 'ya29.SA' } },                                // SA token
+    { body: {} },                                                         // ensureTab Orders
     { body: { updates: { updatedRows: 1 } } },                            // append
     { body: { values: [['meta_pixel', 'PIX'], ['meta_token', 'TOK']] } }, // Config
     { body: { events_received: 1 } },                                     // Meta CAPI
@@ -65,8 +67,8 @@ test('lead relay fires Meta CAPI with dedup event_id when Config has tokens', as
   const req = { method: 'POST', url: '/api/lead?s=S', headers: { 'user-agent': 'UA' }, body: { name: 'A', phone: '0901234567', eid: 'EVT9', src: 'https://lp' } };
   await handler(req, res);
   fx.restore();
-  assert.match(fx.calls[3].url, /graph\.facebook\.com\/v22\.0\/PIX\/events/);
-  assert.equal(JSON.parse(fx.calls[3].opts.body).data[0].event_id, 'EVT9');
+  assert.match(fx.calls[4].url, /graph\.facebook\.com\/v22\.0\/PIX\/events/);
+  assert.equal(JSON.parse(fx.calls[4].opts.body).data[0].event_id, 'EVT9');
 });
 
 test('lead relay drops honeypot submissions without writing', async () => {
