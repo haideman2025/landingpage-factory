@@ -31,10 +31,11 @@ assets/appsscript-Code.gs   # Apps Script nhận đơn COD vào Google Sheet
 SKILL.md                    # mô tả skill high-converting-lp-factory
 ```
 
-## Deploy 1-chạm lên domain của bạn (GitHub + Vercel)
-Trong app, sau khi tạo LP, bấm **🚀 Connect & Deploy** → đăng nhập GitHub + Vercel (popup) →
-nhập domain → làm theo hướng dẫn DNS hiện ra. Source được đẩy vào repo GitHub của bạn,
-site chạy trên Vercel. Chủ tool cấu hình một lần theo `references/deploy-oauth-setup.md`.
+## Deploy 1-chạm — lấy link chạy ads ngay (Vercel)
+Trong app, sau khi tạo LP, bấm **🚀 Deploy — lấy link ngay** → đăng nhập Vercel 1 lần (popup) →
+có link `*.vercel.app` chạy ads ngay. Nhập tên miền riêng (tùy chọn) → tool hiện bản ghi DNS
+để gắn. Chủ tool cấu hình một lần theo `references/deploy-oauth-setup.md` (chỉ cần Vercel
+Integration + 3 env var; GitHub là tùy chọn).
 
 ## Deploy LP lên Cloudflare (cách cũ, vẫn dùng được)
 Xem `references/deploy-and-tracking.md`. Tóm tắt: cài Node.js → `wrangler login` → giải nén DEPLOY KIT → bấm đúp `deploy.bat` (Windows) hoặc `./deploy.sh` (Mac/Linux).

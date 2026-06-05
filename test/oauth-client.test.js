@@ -1,8 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseOAuthMessage } from '../src/deploy/oauth-client.js';
+import { parseOAuthMessage, tokenCacheKey } from '../src/deploy/oauth-client.js';
 
 const ORIGIN = 'https://app.example';
+
+test('tokenCacheKey is namespaced per provider', () => {
+  assert.equal(tokenCacheKey('vercel'), 'lpf_token_vercel');
+  assert.equal(tokenCacheKey('github'), 'lpf_token_github');
+});
 
 test('parseOAuthMessage accepts a matching github message', () => {
   const ev = { origin: ORIGIN, data: { source: 'lpf-oauth', provider: 'github', token: 'gho_X' } };
