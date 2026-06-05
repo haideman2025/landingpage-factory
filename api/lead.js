@@ -1,4 +1,4 @@
-import { getSAAccessToken, appendRow, getSheetConfig } from './_lib/google-sa.js';
+import { getSAAccessToken, appendRow, getSheetConfig, ensureTab } from './_lib/google-sa.js';
 import { buildMetaEvent, sendMetaCAPI, buildTikTokEvent, sendTikTokEvents } from './_lib/capi.js';
 
 function parseBody(req) {
@@ -38,6 +38,7 @@ export default async function handler(req, res) {
       const key = process.env.GOOGLE_SA_PRIVATE_KEY.replace(/\\n/g, '\n');
       const saToken = await getSAAccessToken(process.env.GOOGLE_SA_EMAIL, key);
 
+      await ensureTab(saToken, sheetId, 'Orders');
       await appendRow(saToken, sheetId, [
         p.ts || new Date().toISOString(),
         p.lp || '', p.name || '', p.phone || '', p.address || '', p.fav || '', p.qty || '', p.order_code || '',
