@@ -36,6 +36,20 @@ export async function getSAAccessToken(saEmail, privateKey, fetchImpl = fetch, n
   return d.access_token;
 }
 
+// Read the "Config" tab (key in col A, value in col B) into a plain object.
+// Returns {} if the tab is missing or empty.
+export async function getSheetConfig(accessToken, sheetId, fetchImpl = fetch) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Config!A:B`;
+  const r = await fetchImpl(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!r.ok) return {};
+  const d = await r.json().catch(() => ({}));
+  const out = {};
+  for (const row of d.values || []) {
+    if (row[0]) out[String(row[0]).trim()] = (row[1] != null ? String(row[1]) : '');
+  }
+  return out;
+}
+
 // Append one row to the "Orders" tab of a spreadsheet.
 export async function appendRow(accessToken, sheetId, values, fetchImpl = fetch) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Orders!A1:append`

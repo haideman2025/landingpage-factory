@@ -31,6 +31,15 @@ assets/appsscript-Code.gs   # Apps Script nhận đơn COD vào Google Sheet
 SKILL.md                    # mô tả skill high-converting-lp-factory
 ```
 
+## Tối ưu quảng cáo: Server-side CAPI + chống bot + tuân thủ pháp lý
+- **Meta CAPI + TikTok Events API (server-side)**: điền Meta CAPI token / TikTok Pixel+token →
+  khi khách submit, server bắn conversion với `event_id` trùng pixel browser (**dedup**), hash
+  SHA-256 SĐT/email. Giảm CPL, match rate cao. Token lưu trong tab `Config` của Sheet (Drive
+  của bạn), `/api/lead` đọc qua Service Account — không lưu trên server tool.
+- **Honeypot + lọc SĐT** ở `/api/lead` → chặn fake lead làm hỏng lookalike.
+- **Nghị định 13/2023**: mỗi bộ LP tự kèm `privacy.html` + `terms.html` (khai báo tracking +
+  thông tin doanh nghiệp), LP có link footer. Điền Tên công ty / email / SĐT trong tool.
+
 ## Lưu đơn COD vào Google Sheet (tự động)
 Trong app, ô "Google Sheet endpoint" → bấm **🔗 Kết nối Google & tạo Sheet tự động** →
 đăng nhập Google (quyền `drive.file`) → tool tự tạo Sheet trong Drive của bạn và nối form

@@ -46,3 +46,24 @@ export async function createLeadSheet(token, brand, saEmail) {
 
   return { sheetId, url: ss.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${sheetId}` };
 }
+
+// Write CAPI config as key/value rows into a "Config" tab (created if missing), so the
+// /api/lead relay can read tokens server-side via the Service Account.
+export async function writeConfig(token, sheetId, config) {
+  // Ensure the Config sheet/tab exists (ignore "already exists" errors).
+  await gj(token, `${SHEETS}/spreadsheets/${sheetId}:batchUpdate`, {
+    method: 'POST',
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title: 'Config' } } }] }),
+  }).catch(() => {});
+
+  const rows = Object.keys(config)
+    .filter((k) => config[k] != null && config[k] !== '')
+    .map((k) => [k, String(config[k])]);
+  if (!rows.length) return { written: 0 };
+
+  await gj(token, `${SHEETS}/spreadsheets/${sheetId}/values/Config!A1:B${rows.length}?valueInputOption=RAW`, {
+    method: 'PUT',
+    body: JSON.stringify({ values: rows }),
+  });
+  return { written: rows.length };
+}

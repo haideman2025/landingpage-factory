@@ -1,7 +1,9 @@
 import { connectCached, clearCachedToken } from '../deploy/oauth-client.js';
-import { createLeadSheet } from './sheets.js';
+import { createLeadSheet, writeConfig } from './sheets.js';
 
 function el(id) { return document.getElementById(id); }
+
+function fieldVal(id) { const e = el(id); return e ? e.value.trim() : ''; }
 
 async function onConnect() {
   const btn = el('lpf-gconnect');
@@ -12,6 +14,13 @@ async function onConnect() {
     const g = await connectCached('google');
     const brand = (window.__LPF_getBrand && window.__LPF_getBrand()) || 'Landing Page';
     const { sheetId, url } = await createLeadSheet(g.token, brand, g.saEmail);
+    // Store CAPI config in the sheet's Config tab so /api/lead can fire Meta/TikTok server-side.
+    await writeConfig(g.token, sheetId, {
+      meta_pixel: fieldVal('pixel'),
+      meta_token: fieldVal('metatoken'),
+      tiktok_pixel: fieldVal('ttpixel'),
+      tiktok_token: fieldVal('tttoken'),
+    }).catch(function () {});
     const endpoint = window.location.origin + '/api/lead?s=' + sheetId;
     const input = el('sheet');
     if (input) input.value = endpoint;
