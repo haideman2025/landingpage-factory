@@ -106,6 +106,13 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
 
 <div class="card"><h2><span class="step">3</span> Sửa & Preview & Tải</h2>
   <button class="big sec" id="dlAll" onclick="downloadAll()" disabled>⬇️ Tải DEPLOY KIT (10 LP + script deploy Cloudflare 1-click)</button>
+  <div id="lpf-deploy-panel" style="margin-top:14px;padding:14px;border:1px solid #2a2a2a;border-radius:10px">
+    <div style="font-weight:600;margin-bottom:8px">🚀 Deploy lên domain của bạn (GitHub + Vercel)</div>
+    <input id="lpf-domain" placeholder="domain của bạn, ví dụ: shop.example.com (để trống nếu chỉ cần *.vercel.app)"
+           style="width:100%;padding:8px;margin-bottom:8px">
+    <button class="big sec" id="lpf-deploy-btn">🚀 Connect &amp; Deploy</button>
+    <div id="lpf-deploy-steps" style="margin-top:10px;font-size:14px"></div>
+  </div>
   <div class="lpgrid" id="lpgrid"></div>
   <div class="editor" id="editor"></div>
 </div>
@@ -309,4 +316,30 @@ const LPRUNTIME=`var io=new IntersectionObserver(function(es){es.forEach(functio
 (function(){var end=Date.now()+22*3600*1000;function t(){var d=Math.max(0,end-Date.now()),h=Math.floor(d/3.6e6),m=Math.floor(d%3.6e6/6e4),s=Math.floor(d%6e4/1e3);var H=document.getElementById('cd-h');if(!H)return;H.textContent=String(h).padStart(2,'0');document.getElementById('cd-m').textContent=String(m).padStart(2,'0');document.getElementById('cd-s').textContent=String(s).padStart(2,'0');}t();setInterval(t,1000);})();
 var cf=document.getElementById('codForm');if(cf)cf.addEventListener('submit',function(e){e.preventDefault();var f=e.target;var data={lp:LP_NAME,name:f.name.value,phone:f.phone.value,address:f.address.value,qty:f.qty.value,ts:new Date().toISOString()};try{fbq('track','Lead',{content_name:LP_NAME});}catch(x){}function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});`;
 </script>
+<!-- ===== Deploy bridge: expose generated site files to the deploy module (classic script, sees CFG/LPS/renderLP/srcAsset) ===== -->
+<script>
+window.__LPF_collectSiteFiles = function () {
+  if (typeof LPS === 'undefined' || !LPS || !LPS.length) return [];
+  var files = [];
+  var links = [];
+  LPS.forEach(function (lp, i) {
+    var slug = (lp.a && lp.a.slug) || ('lp' + i);
+    files.push({ path: slug + '/index.html', content: renderLP(lp, srcAsset(lp)), encoding: 'utf-8' });
+    Object.keys(lp.slots).forEach(function (k) {
+      // lp.slots[k].name already looks like "assets/xxx.png"
+      if (lp.b64[k]) files.push({ path: slug + '/' + lp.slots[k].name, content: lp.b64[k], encoding: 'base64' });
+    });
+    links.push('<li><a href="./' + slug + '/">' + slug + '</a></li>');
+  });
+  files.push({ path: 'index.html',
+    content: '<!doctype html><meta charset="utf-8"><title>Landing Pages</title>' +
+             '<ul style="font-family:sans-serif;font-size:18px">' + links.join('') + '</ul>',
+    encoding: 'utf-8' });
+  return files;
+};
+window.__LPF_getBrand = function () {
+  return (typeof CFG !== 'undefined' && CFG && CFG.brand) || 'lp';
+};
+</script>
+<script type="module" src="src/deploy/wizard-init.js"></script>
 </body></html>
