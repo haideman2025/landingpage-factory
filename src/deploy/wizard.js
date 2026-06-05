@@ -1,24 +1,29 @@
 import { slugify } from './util.js';
 
-// Pure orchestration. `deps` injects connect, github, vercel, onStep.
-export async function runDeploy({ brand, files, domain, deps }) {
+// Pure orchestration. Vercel-only by default (fastest path to a live ad link).
+// Pass withGitHub:true to also push source to the user's GitHub repo.
+// `deps` injects connect, vercel, (optional) github, onStep.
+export async function runDeploy({ brand, files, domain, deps, withGitHub = false }) {
   const onStep = deps.onStep || (() => {});
   const slug = slugify(brand);
 
-  // 1. GitHub
-  let owner, repo;
-  try {
-    onStep('github', 'running');
-    const g = await deps.connect('github');
-    ({ owner, repo } = await deps.github.ensureRepo(g.token, `${slug}-lp`));
-    await deps.github.pushFiles(g.token, owner, repo, files);
-    onStep('github', 'done', { repo: `${owner}/${repo}` });
-  } catch (e) {
-    onStep('github', 'error', { message: e.message });
-    throw e;
+  // 1. GitHub (optional)
+  let repo = null;
+  if (withGitHub) {
+    try {
+      onStep('github', 'running');
+      const g = await deps.connect('github');
+      const r = await deps.github.ensureRepo(g.token, `${slug}-lp`);
+      await deps.github.pushFiles(g.token, r.owner, r.repo, files);
+      repo = `${r.owner}/${r.repo}`;
+      onStep('github', 'done', { repo });
+    } catch (e) {
+      onStep('github', 'error', { message: e.message });
+      throw e;
+    }
   }
 
-  // 2. Vercel deploy
+  // 2. Vercel deploy (always) -> instant *.vercel.app link
   let dep, ready, vtok;
   try {
     onStep('vercel', 'running');
@@ -33,7 +38,7 @@ export async function runDeploy({ brand, files, domain, deps }) {
     throw e;
   }
 
-  // 3. Domain (optional)
+  // 3. Custom domain (optional)
   let domainInfo = null;
   if (domain) {
     try {
@@ -46,5 +51,5 @@ export async function runDeploy({ brand, files, domain, deps }) {
     }
   }
 
-  return { repo: `${owner}/${repo}`, url: ready.url, domain: domainInfo };
+  return { repo, url: ready.url, domain: domainInfo };
 }

@@ -22,12 +22,26 @@ function makeDeps(overrides = {}) {
   return { deps, steps };
 }
 
-test('runDeploy runs github -> vercel -> domain and returns summary', async () => {
+test('default (Vercel-only) deploys without GitHub and returns the link', async () => {
+  const { deps, steps } = makeDeps();
+  const out = await runDeploy({
+    brand: 'Brand',
+    files: [{ path: 'index.html', content: '<h1>', encoding: 'utf-8' }],
+    deps,
+  });
+  assert.equal(out.url, 'site.vercel.app');
+  assert.equal(out.repo, null);
+  assert.ok(!steps.some((s) => s[0] === 'github'));
+  assert.ok(steps.some((s) => s[0] === 'vercel' && s[1] === 'done'));
+});
+
+test('withGitHub:true runs github -> vercel and returns repo', async () => {
   const { deps, steps } = makeDeps();
   const out = await runDeploy({
     brand: 'Brand',
     files: [{ path: 'index.html', content: '<h1>', encoding: 'utf-8' }],
     domain: 'x.com',
+    withGitHub: true,
     deps,
   });
   assert.equal(out.repo, 'u/brand-lp');
@@ -37,17 +51,28 @@ test('runDeploy runs github -> vercel -> domain and returns summary', async () =
     ['github:done', 'vercel:done', 'domain:done']);
 });
 
-test('runDeploy skips domain step when no domain given', async () => {
+test('attaches domain when given (Vercel-only)', async () => {
+  const { deps, steps } = makeDeps();
+  const out = await runDeploy({ brand: 'B', files: [], domain: 'x.com', deps });
+  assert.equal(out.domain.aRecord, '76.76.21.21');
+  assert.ok(steps.some((s) => s[0] === 'domain' && s[1] === 'done'));
+  assert.ok(!steps.some((s) => s[0] === 'github'));
+});
+
+test('skips domain step when no domain given', async () => {
   const { deps, steps } = makeDeps();
   const out = await runDeploy({ brand: 'B', files: [], deps });
   assert.equal(out.domain, null);
   assert.ok(!steps.some((s) => s[0] === 'domain'));
 });
 
-test('runDeploy marks step error and rethrows on failure', async () => {
+test('marks step error and rethrows on failure', async () => {
   const { deps, steps } = makeDeps({
-    github: { ensureRepo: async () => { throw new Error('repo fail'); }, pushFiles: async () => ({}) },
+    vercel: {
+      createDeployment: async () => { throw new Error('deploy fail'); },
+      waitDeployment: async () => ({}), addDomain: async () => ({}),
+    },
   });
-  await assert.rejects(() => runDeploy({ brand: 'B', files: [], deps }), /repo fail/);
-  assert.ok(steps.some((s) => s[0] === 'github' && s[1] === 'error'));
+  await assert.rejects(() => runDeploy({ brand: 'B', files: [], deps }), /deploy fail/);
+  assert.ok(steps.some((s) => s[0] === 'vercel' && s[1] === 'error'));
 });
