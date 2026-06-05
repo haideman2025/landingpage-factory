@@ -3,7 +3,7 @@ export function parseOAuthMessage(ev, provider, expectedOrigin) {
   const d = ev.data;
   if (!d || d.source !== 'lpf-oauth' || d.provider !== provider) return null;
   if (!d.token) return null;
-  return { token: d.token, teamId: d.teamId || null };
+  return { token: d.token, teamId: d.teamId || null, saEmail: d.saEmail || null };
 }
 
 export function tokenCacheKey(provider) {

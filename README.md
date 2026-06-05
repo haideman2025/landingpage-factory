@@ -31,6 +31,12 @@ assets/appsscript-Code.gs   # Apps Script nhận đơn COD vào Google Sheet
 SKILL.md                    # mô tả skill high-converting-lp-factory
 ```
 
+## Lưu đơn COD vào Google Sheet (tự động)
+Trong app, ô "Google Sheet endpoint" → bấm **🔗 Kết nối Google & tạo Sheet tự động** →
+đăng nhập Google (quyền `drive.file`) → tool tự tạo Sheet trong Drive của bạn và nối form
+COD vào. Khách đặt hàng → đơn tự đổ vào Sheet. Chủ tool cài một lần theo
+`references/google-sheet-oauth-setup.md`. (Vẫn dán tay URL Apps Script được nếu thích.)
+
 ## Deploy 1-chạm — lấy link chạy ads ngay (Vercel)
 Trong app, sau khi tạo LP, bấm **🚀 Deploy — lấy link ngay** → đăng nhập Vercel 1 lần (popup) →
 có link `*.vercel.app` chạy ads ngay. Nhập tên miền riêng (tùy chọn) → tool hiện bản ghi DNS

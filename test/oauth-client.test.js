@@ -11,12 +11,17 @@ test('tokenCacheKey is namespaced per provider', () => {
 
 test('parseOAuthMessage accepts a matching github message', () => {
   const ev = { origin: ORIGIN, data: { source: 'lpf-oauth', provider: 'github', token: 'gho_X' } };
-  assert.deepEqual(parseOAuthMessage(ev, 'github', ORIGIN), { token: 'gho_X', teamId: null });
+  assert.deepEqual(parseOAuthMessage(ev, 'github', ORIGIN), { token: 'gho_X', teamId: null, saEmail: null });
 });
 
 test('parseOAuthMessage returns teamId for vercel', () => {
   const ev = { origin: ORIGIN, data: { source: 'lpf-oauth', provider: 'vercel', token: 'v', teamId: 't1' } };
-  assert.deepEqual(parseOAuthMessage(ev, 'vercel', ORIGIN), { token: 'v', teamId: 't1' });
+  assert.deepEqual(parseOAuthMessage(ev, 'vercel', ORIGIN), { token: 'v', teamId: 't1', saEmail: null });
+});
+
+test('parseOAuthMessage passes saEmail through for google', () => {
+  const ev = { origin: ORIGIN, data: { source: 'lpf-oauth', provider: 'google', token: 'ya29', saEmail: 'sa@x.iam' } };
+  assert.deepEqual(parseOAuthMessage(ev, 'google', ORIGIN), { token: 'ya29', teamId: null, saEmail: 'sa@x.iam' });
 });
 
 test('parseOAuthMessage rejects wrong origin/provider/source', () => {
