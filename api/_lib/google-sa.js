@@ -62,7 +62,7 @@ export async function ensureTab(accessToken, sheetId, title, fetchImpl = fetch) 
 // Append one row to a tab (default "Orders") of a spreadsheet.
 export async function appendRow(accessToken, sheetId, values, fetchImpl = fetch, tab = 'Orders') {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${tab}!A1:append`
-    + '?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
+    + '?valueInputOption=RAW&insertDataOption=INSERT_ROWS';
   const r = await fetchImpl(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
