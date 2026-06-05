@@ -35,29 +35,64 @@ test('google callback exchanges code and returns token + saEmail in popup HTML',
   assert.equal(fx.calls[0].url, 'https://oauth2.googleapis.com/token');
 });
 
-test('lead relay signs SA JWT, gets token, appends the row', async () => {
+test('lead relay appends the row then reads Config (no CAPI when unset)', async () => {
   const fx = installFetch([
     { body: { access_token: 'ya29.SA' } },        // SA token
     { body: { updates: { updatedRows: 1 } } },    // append
+    { body: { values: [] } },                     // Config read -> empty
   ]);
   const { default: handler } = await import('../api/lead.js');
   const res = mockRes();
-  const req = { method: 'POST', url: '/api/lead?s=SHEET9', body: { name: 'Nguyen', phone: '090', address: 'HN', qty: '2', lp: 'LP1' } };
+  const req = { method: 'POST', url: '/api/lead?s=SHEET9', headers: {}, body: { name: 'Nguyen', phone: '0901234567', address: 'HN', qty: '2', lp: 'LP1' } };
   await handler(req, res);
   fx.restore();
   assert.equal(res.statusCode, 200);
   assert.match(res.body, /ok":true/);
-  // second call is the append, containing the lead name
   assert.match(fx.calls[1].url, /spreadsheets\/SHEET9\/values\/Orders!A1:append/);
-  const sent = JSON.parse(fx.calls[1].opts.body);
-  assert.ok(sent.values[0].includes('Nguyen'));
+  assert.ok(JSON.parse(fx.calls[1].opts.body).values[0].includes('Nguyen'));
+  assert.match(fx.calls[2].url, /values\/Config!A:B/);
+});
+
+test('lead relay fires Meta CAPI with dedup event_id when Config has tokens', async () => {
+  const fx = installFetch([
+    { body: { access_token: 'ya29.SA' } },                                // SA token
+    { body: { updates: { updatedRows: 1 } } },                            // append
+    { body: { values: [['meta_pixel', 'PIX'], ['meta_token', 'TOK']] } }, // Config
+    { body: { events_received: 1 } },                                     // Meta CAPI
+  ]);
+  const { default: handler } = await import('../api/lead.js');
+  const res = mockRes();
+  const req = { method: 'POST', url: '/api/lead?s=S', headers: { 'user-agent': 'UA' }, body: { name: 'A', phone: '0901234567', eid: 'EVT9', src: 'https://lp' } };
+  await handler(req, res);
+  fx.restore();
+  assert.match(fx.calls[3].url, /graph\.facebook\.com\/v22\.0\/PIX\/events/);
+  assert.equal(JSON.parse(fx.calls[3].opts.body).data[0].event_id, 'EVT9');
+});
+
+test('lead relay drops honeypot submissions without writing', async () => {
+  const fx = installFetch([]); // no fetch should happen
+  const { default: handler } = await import('../api/lead.js');
+  const res = mockRes();
+  await handler({ method: 'POST', url: '/api/lead?s=S', headers: {}, body: { name: 'bot', phone: '0901234567', website: 'http://spam' } }, res);
+  fx.restore();
+  assert.equal(res.statusCode, 200);
+  assert.equal(fx.calls.length, 0);
+});
+
+test('lead relay ignores submissions with no valid phone', async () => {
+  const fx = installFetch([]);
+  const { default: handler } = await import('../api/lead.js');
+  const res = mockRes();
+  await handler({ method: 'POST', url: '/api/lead?s=S', headers: {}, body: { name: 'x', phone: '123' } }, res);
+  fx.restore();
+  assert.equal(fx.calls.length, 0);
 });
 
 test('lead relay still returns 200 on failure (never blocks the form)', async () => {
   const fx = installFetch([{ ok: false, status: 400, body: { error: 'bad' } }]);
   const { default: handler } = await import('../api/lead.js');
   const res = mockRes();
-  await handler({ method: 'POST', url: '/api/lead?s=X', body: { name: 'A' } }, res);
+  await handler({ method: 'POST', url: '/api/lead?s=X', headers: {}, body: { name: 'A', phone: '0901234567' } }, res);
   fx.restore();
   assert.equal(res.statusCode, 200);
   assert.match(res.body, /ok":false/);
