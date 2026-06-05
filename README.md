@@ -31,6 +31,12 @@ assets/appsscript-Code.gs   # Apps Script nhận đơn COD vào Google Sheet
 SKILL.md                    # mô tả skill high-converting-lp-factory
 ```
 
+## Thu tiền trước (VietQR) + đa giao diện
+- **VietQR**: điền ngân hàng + số TK + tên → mỗi LP hiện QR chuyển khoản (số tiền + mã đơn
+  riêng từng khách). Xác nhận thanh toán tự động qua webhook SePay → tab `Payments` của Sheet.
+  Xem `references/payment-sepay-setup.md`.
+- **Đa template**: chọn skin Mặc định / Sáng / Shopee / TikTok Shop / Hasaki để A/B test nhiều "look".
+
 ## Tối ưu quảng cáo: Server-side CAPI + chống bot + tuân thủ pháp lý
 - **Meta CAPI + TikTok Events API (server-side)**: điền Meta CAPI token / TikTok Pixel+token →
   khi khách submit, server bắn conversion với `event_id` trùng pixel browser (**dedup**), hash

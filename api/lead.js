@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
       await appendRow(saToken, sheetId, [
         p.ts || new Date().toISOString(),
-        p.lp || '', p.name || '', p.phone || '', p.address || '', p.fav || '', p.qty || '',
+        p.lp || '', p.name || '', p.phone || '', p.address || '', p.fav || '', p.qty || '', p.order_code || '',
       ]);
 
       // Server-side conversions (best-effort; never block the response).
