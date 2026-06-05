@@ -5,3 +5,6 @@ out/
 out_plus/
 dist/
 .wrangler/
+.env
+.env.local
+.vercel/
