@@ -74,7 +74,10 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   </div>
   <div class="row">
     <div><label>Meta Pixel ID</label><input id="pixel" value="2171460696601031"></div>
-    <div><label>Google Sheet endpoint (tuỳ chọn)</label><input id="sheet" placeholder="https://script.google.com/.../exec"></div>
+    <div><label>Google Sheet endpoint (tuỳ chọn)</label><input id="sheet" placeholder="https://script.google.com/.../exec">
+      <button type="button" id="lpf-gconnect" class="sec" style="margin-top:6px;padding:8px 12px">🔗 Kết nối Google &amp; tạo Sheet tự động</button>
+      <div id="lpf-gstatus" style="margin-top:6px;font-size:12.5px;color:#98a2b2">Bấm để tự tạo Google Sheet lưu đơn — khỏi cần dán Apps Script.</div>
+    </div>
   </div>
   <div class="row">
     <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
@@ -343,4 +346,5 @@ window.__LPF_getBrand = function () {
 };
 </script>
 <script type="module" src="src/deploy/wizard-init.js"></script>
+<script type="module" src="src/google/connect-init.js"></script>
 </body></html>
