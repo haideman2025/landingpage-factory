@@ -14,11 +14,13 @@ test('declaredProcessors lists only enabled trackers', () => {
 });
 
 test('buildPrivacy includes business info, Decree 13, and declared processors', () => {
-  const html = buildPrivacy({ company: 'ONIIZ', email: 'a@b.com', phone: '0909', pixel: 'PIX', tiktokPixel: 'TT' });
+  const html = buildPrivacy({ company: 'ONIIZ', email: 'a@b.com', phone: '0909', address: '12 NH Q1', mst: '0312345678', pixel: 'PIX', tiktokPixel: 'TT' });
   assert.match(html, /Chính sách bảo mật/);
   assert.match(html, /Nghị định 13\/2023/);
   assert.match(html, /ONIIZ/);
   assert.match(html, /a@b\.com/);
+  assert.match(html, /12 NH Q1/);
+  assert.match(html, /0312345678/);
   assert.match(html, /Meta Platforms/);
   assert.match(html, /TikTok/);
   assert.match(html, /<!doctype html>/);

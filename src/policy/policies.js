@@ -43,7 +43,7 @@ export function buildPrivacy(biz) {
 <h2>5. Quyền của bạn</h2>
 <p>Bạn có quyền truy cập, chỉnh sửa, xóa hoặc yêu cầu ngừng xử lý dữ liệu cá nhân của mình bằng cách liên hệ chúng tôi.</p>
 <h2>6. Liên hệ</h2>
-<p>${esc(name)}${b.email ? ' — Email: ' + esc(b.email) : ''}${b.phone ? ' — ĐT: ' + esc(b.phone) : ''}.</p>`;
+<p>${esc(name)}${b.address ? ' — ' + esc(b.address) : ''}${b.phone ? ' — ĐT: ' + esc(b.phone) : ''}${b.email ? ' — Email: ' + esc(b.email) : ''}${b.mst ? ' — MST/GPKD: ' + esc(b.mst) : ''}.</p>`;
   return page('Chính sách bảo mật — ' + name, body);
 }
 
@@ -62,6 +62,6 @@ export function buildTerms(biz) {
 <h2>4. Bảo mật thông tin</h2>
 <p>Thông tin cá nhân được xử lý theo <a href="./privacy.html">Chính sách bảo mật</a>.</p>
 <h2>5. Liên hệ</h2>
-<p>${esc(name)}${b.email ? ' — Email: ' + esc(b.email) : ''}${b.phone ? ' — ĐT: ' + esc(b.phone) : ''}.</p>`;
+<p>${esc(name)}${b.address ? ' — ' + esc(b.address) : ''}${b.phone ? ' — ĐT: ' + esc(b.phone) : ''}${b.email ? ' — Email: ' + esc(b.email) : ''}${b.mst ? ' — MST/GPKD: ' + esc(b.mst) : ''}.</p>`;
   return page('Điều khoản sử dụng — ' + name, body);
 }
