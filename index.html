@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LP Factory Studio v2 — Ý tưởng → Landing Page đa ngôn ngữ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+:root{--bg:#0c0f14;--s1:#151a22;--s2:#1d242f;--ink:#eef2f7;--mut:#94a0b2;--acc:#4ade80;--acc2:#2f6bff;--line:#28303d;--warn:#f0b429;--bad:#ff6b6b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.6;padding:24px 14px}
+.wrap{max-width:1040px;margin:0 auto}
+h1{font-size:24px;margin-bottom:2px}.sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.step{width:24px;height:24px;border-radius:50%;background:var(--acc);color:#06230f;font-weight:900;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+label{display:block;font-size:12.5px;color:var(--mut);font-weight:700;margin:10px 0 5px}
+input,textarea,select{width:100%;background:#080a0e;border:1px solid var(--line);border-radius:10px;padding:11px;color:#fff;font-size:14px;font-family:inherit}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:150px}
+button{background:var(--acc);color:#06230f;border:none;border-radius:10px;padding:11px 16px;font-weight:800;font-size:14px;cursor:pointer}
+button.sec{background:var(--s2);color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.big{font-size:15px;padding:14px;width:100%}
+.note{background:rgba(240,180,41,.1);border-left:3px solid var(--warn);border-radius:8px;padding:11px 13px;font-size:12.5px;color:#e8d9b0;margin-top:10px}
+.muted{color:var(--mut);font-size:12.5px}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--mut);cursor:pointer;font-size:13px}
+.bar{height:8px;background:#0a0d12;border-radius:6px;overflow:hidden;margin:10px 0}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:.3s}
+.lpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
+.lp{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:13px}.lp .t{font-weight:800;font-size:14px}.lp .e{font-size:11px;color:var(--acc);font-weight:800;text-transform:uppercase}.lp .st{font-size:11px;color:var(--mut);margin:6px 0}.lp .rowb{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.lp .rowb button{flex:1;padding:7px;font-size:12px;min-width:70px}
+.editor{margin-top:14px;border-top:2px solid var(--acc);padding-top:14px;display:none}
+.ed-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.ed-grid{grid-template-columns:1fr}}
+.imgcell{background:#0a0d12;border:1px solid var(--line);border-radius:10px;padding:8px}.imgcell img{width:100%;border-radius:8px;display:block;aspect-ratio:1/1;object-fit:cover}.imgcell .k{font-size:11px;color:var(--acc);font-weight:800;margin:4px 0}.imgcell textarea{min-height:46px;font-size:11.5px}
+.imgrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+code{background:#080a0e;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;color:#7aa2ff}
+a{color:#7aa2ff}
+iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;display:none;align-items:center;justify-content:center;padding:20px}
+.modal .box{background:var(--s1);border:1px solid var(--line);border-radius:14px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:14px}
+.modal .box .x{float:right;cursor:pointer;color:var(--mut);font-size:20px}
+</style></head>
+<body><div class="wrap">
+<h1>🏭 LP Factory Studio <span style="font-size:13px;color:var(--acc)">v2</span></h1>
+<div class="sub">Ý tưởng/script win → AI viết copy đa ngôn ngữ theo brand guideline → tạo ảnh (Nano Banana Pro 2) → sửa copy/ảnh từng section + carousel video KOC → preview → tải ZIP deploy Cloudflare.</div>
+
+<div class="card"><h2><span class="step">0</span> Cấu hình AI Studio</h2>
+  <label>Gemini API Key</label><input type="password" id="key" placeholder="AIza...">
+  <div class="row" style="margin-top:8px">
+    <div><label>Model copy/phân tích (text)</label><input id="tmodel" value="gemini-2.5-pro" list="models_t"></div>
+    <div><label>Model ảnh (Nano Banana Flash)</label><input id="imodel" value="gemini-2.5-flash-image" list="models_i"></div>
+  </div>
+  <datalist id="models_t"></datalist><datalist id="models_i"></datalist>
+  <button class="sec" onclick="listModels()" style="margin-top:8px;padding:8px 12px;font-size:13px">↻ Liệt kê model khả dụng trên key</button>
+  <div class="note">Bấm "Liệt kê model" để lấy đúng tên model mới nhất tài khoản bạn đang có (vd gemini-2.5-pro, gemini-3-pro-preview...) rồi chọn trong ô. Mặc định dùng bản pro mạnh nhất cho phần phân tích chiến dịch; model ảnh giữ Nano Banana Pro 2.</div>
+  <label><input type="checkbox" id="remember" style="width:auto"> Ghi nhớ key</label>
+</div>
+
+<div class="card"><h2><span class="step">1</span> Ý tưởng · Thị trường · Sản phẩm · Brand</h2>
+  <label>Ý tưởng / kịch bản win (insight)</label>
+  <textarea id="idea" placeholder="Dán script TikTok đã viral / insight nỗi đau khách hàng..."></textarea>
+  <div class="row">
+    <div><label>Ngôn ngữ / Thị trường mục tiêu</label>
+      <select id="lang"><option value="Vietnamese (Tiếng Việt)">Tiếng Việt 🇻🇳</option><option value="English (US)">English 🇺🇸</option><option value="Thai (ภาษาไทย)">ไทย 🇹🇭</option><option value="Indonesian (Bahasa)">Indonesia 🇮🇩</option><option value="Filipino/Tagalog">Filipino 🇵🇭</option><option value="Malay">Malay 🇲🇾</option><option value="Chinese (Simplified)">中文 🇨🇳</option></select></div>
+    <div><label>Đơn vị tiền / Số angle</label><div class="row"><input id="curr" value="đ" style="max-width:70px"><input type="number" id="nangle" value="6" min="1" max="20"></div></div>
+  </div>
+  <div class="row">
+    <div><label>Thương hiệu</label><input id="brand" value="ONIIZ"></div>
+    <div><label>Sản phẩm</label><input id="product" value="Combo 3 Bọt Vệ Sinh Nam ONIIZ (Beachy, Juicy, Milky)"></div>
+  </div>
+  <div class="row">
+    <div><label>Giá gốc</label><input id="pold" value="597.000đ"></div>
+    <div><label>Giá KM</label><input id="pnew" value="429.000đ"></div>
+    <div><label>Tiết kiệm</label><input id="psave" value="168.000đ (-28%)"></div>
+  </div>
+  <div class="row">
+    <div><label>Meta Pixel ID</label><input id="pixel" value="2171460696601031"></div>
+    <div><label>Google Sheet endpoint (tuỳ chọn)</label><input id="sheet" placeholder="https://script.google.com/.../exec"></div>
+  </div>
+  <div class="row">
+    <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
+    <div><label>Thông điệp truyền thông chính</label><input id="msg" placeholder="VD: Tự tin từ bên trong — sạch thơm cả ngày"></div>
+  </div>
+  <label>👥 Tệp khách hàng / công chúng mục tiêu (tuổi, giới, nghề, lối sống, nỗi đau, bối cảnh)</label>
+  <textarea id="audience" style="min-height:54px" placeholder="VD: Nam 22-32, nhân viên văn phòng & gym-goer thành thị, quan tâm vẻ ngoài và sự tự tin khi hẹn hò, ngại mùi cơ thể cuối ngày..."></textarea>
+  <label>Brand guideline — nhập text HOẶC upload file (PDF / DOCX / TXT / MD)</label>
+  <textarea id="guide" style="min-height:54px" placeholder="Tone, màu chủ đạo, do/don't... (hoặc upload file bên dưới để tự trích nội dung vào đây)"></textarea>
+  <div class="drop" id="dropGuide" style="margin-top:6px">📄 Upload brand guideline (PDF / DOCX / TXT / MD) — tự trích nội dung</div>
+  <input type="file" id="fileGuide" accept=".pdf,.txt,.md,.doc,.docx,application/pdf,text/plain" hidden>
+  <div id="guideStatus" class="muted" style="margin-top:4px"></div>
+  <label>Brand Visual DNA (EN) — để trống AI tự tạo</label>
+  <textarea id="dna" style="min-height:46px"></textarea>
+  <button class="big" id="genCfg" onclick="genConfigs()" style="margin-top:12px">🤖 AI thiết kế Landing Page (đa ngôn ngữ)</button>
+  <div class="bar"><i id="prog1"></i></div><div id="st1" class="muted"></div>
+</div>
+
+<div class="card"><h2><span class="step">2</span> Ảnh tham chiếu + Tạo ảnh</h2>
+  <div class="row">
+    <div><label>Ảnh sản phẩm (1–5, rõ nhãn)</label><div class="drop" id="dropProd">＋ ảnh sản phẩm</div><input type="file" id="fileProd" accept="image/*" multiple hidden></div>
+    <div><label>Ảnh brand guideline (logo/màu — tuỳ chọn)</label><div class="drop" id="dropBrand">＋ ảnh brand</div><input type="file" id="fileBrand" accept="image/*" multiple hidden></div>
+  </div>
+  <div id="refPrev" style="margin-top:8px"></div>
+  <div class="row" style="margin-top:8px"><div><label>Số ảnh song song (Tier 3 → 8–12)</label><input type="number" id="conc" value="8" min="1" max="24" style="max-width:120px"></div></div>
+  <button class="big" id="genImg" onclick="buildAll()" disabled style="margin-top:6px">⚡ Tạo ảnh + Build toàn bộ Landing Page</button>
+  <div class="bar"><i id="prog2"></i></div><div id="st2" class="muted"></div>
+</div>
+
+<div class="card"><h2><span class="step">3</span> Sửa & Preview & Tải</h2>
+  <button class="big sec" id="dlAll" onclick="downloadAll()" disabled>⬇️ Tải DEPLOY KIT (10 LP + script deploy Cloudflare 1-click)</button>
+  <div class="lpgrid" id="lpgrid"></div>
+  <div class="editor" id="editor"></div>
+</div>
+</div>
+
+<div class="modal" id="modal"><div class="box"><span class="x" onclick="document.getElementById('modal').style.display='none'">✕</span><div id="modalbody"></div></div></div>
+
+<script>
+const $=s=>document.querySelector(s);
+let CFG=null, ANGLES=[], UI={}, REF=[], LPS=[], curEdit=-1;
+try{const k=localStorage.getItem('lpf_key');if(k){$('#key').value=k;$('#remember').checked=true;}}catch(e){}
+$('#remember').addEventListener('change',e=>{try{e.target.checked?localStorage.setItem('lpf_key',$('#key').value):localStorage.removeItem('lpf_key');}catch(_){}});
+function slug(s){return (s||'img').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'x';}
+function rconf(r){return ({'4/5':'4:5','16/9':'16:9','1/1':'1:1','9/16':'9:16'})[r]||'1:1';}
+function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ---- reference image uploads (product + brand) ----
+function wireUp(dropId,inpId,tag){const d=$('#'+dropId),i=$('#'+inpId);d.onclick=()=>i.click();['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--acc)'}));['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--line)'}));d.addEventListener('drop',ev=>add(ev.dataTransfer.files));i.addEventListener('change',()=>add(i.files));
+ function add(fs){[...fs].slice(0,5).forEach(f=>{const r=new FileReader();r.onload=()=>{REF.push({mime:f.type||'image/jpeg',data:r.result.split(',')[1],url:r.result,tag});renderRef();};r.readAsDataURL(f);});}}
+function renderRef(){$('#refPrev').innerHTML=REF.map((p,i)=>`<span style="display:inline-block;position:relative;margin:0 6px 6px 0"><img src="${p.url}" style="height:54px;border-radius:8px;border:1px solid var(--line)"><span style="position:absolute;top:-6px;right:-6px;background:var(--bad);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;text-align:center;cursor:pointer;line-height:18px" onclick="REF.splice(${i},1);renderRef()">✕</span><div style="font-size:9px;color:var(--mut);text-align:center">${p.tag}</div></span>`).join('');}
+wireUp('dropProd','fileProd','product'); wireUp('dropBrand','fileBrand','brand');
+try{if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}catch(e){}
+(function(){var d=$('#dropGuide'),i=$('#fileGuide');if(!d)return;d.onclick=()=>i.click();['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--acc)'}));['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--line)'}));d.addEventListener('drop',ev=>parseGuide(ev.dataTransfer.files[0]));i.addEventListener('change',()=>parseGuide(i.files[0]));})();
+async function parseGuide(file){if(!file)return;const stt=$('#guideStatus');stt.textContent='Đang trích: '+file.name+'...';const ext=(file.name.split('.').pop()||'').toLowerCase();let txt='';try{
+ if(ext==='pdf'){const ab=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:ab}).promise;for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const c=await pg.getTextContent();txt+=c.items.map(x=>x.str).join(' ')+'\n';}}
+ else if(ext==='docx'||ext==='doc'){const ab=await file.arrayBuffer();const r=await mammoth.extractRawText({arrayBuffer:ab});txt=r.value;}
+ else{txt=await file.text();}
+ txt=txt.replace(/\s+\n/g,'\n').trim();const cur=$('#guide').value.trim();$('#guide').value=(cur?cur+'\n\n':'')+'[Từ '+file.name+']\n'+txt.slice(0,6000);stt.innerHTML='<span style="color:var(--acc)">✓ Đã trích '+txt.length+' ký tự từ '+file.name+'</span>';
+}catch(e){stt.innerHTML='<span style="color:var(--bad)">Không trích được ('+e.message+'). Hãy copy-paste thủ công.</span>';}}
+async function listModels(){const k=$('#key').value.trim();if(!k){alert('Nhập API key trước');return;}try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(k));const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||'HTTP '+r.status);const ms=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace('models/',''));const dt=$('#models_t'),di=$('#models_i');dt.innerHTML='';di.innerHTML='';ms.forEach(n=>{const o=document.createElement('option');o.value=n;dt.appendChild(o);if(/image/i.test(n)){const o2=document.createElement('option');o2.value=n;di.appendChild(o2);}});alert('Tìm thấy '+ms.length+' model. Bấm vào ô model để chọn (gợi ý text: bản pro mới nhất; ảnh: bản có "image").');}catch(e){alert('Lỗi liệt kê model: '+e.message);}}
+
+// ---- prompt composer ----
+function BRANDDNA(){return CFG.dna||("BRAND VISUAL DNA: "+CFG.brand+" — premium cinematic photoreal, consistent grade/lighting across all images.");}
+function AUDIENCE(){return CFG.audienceVisual?("TARGET AUDIENCE shown in image: "+CFG.audienceVisual+". Reflect the campaign goal/message: "+(CFG.goal||"")+(CFG.msg?(" — "+CFG.msg):"")+". "):"";}
+function PRODREF(){return "Use the attached reference image(s): keep the exact product packaging/label/logo; follow the brand visual identity.";}
+function P(scene,ratio,withprod){return scene+". Cinematic photoreal STORYTELLING image, emotionally evocative, authentic candid human emotion that makes the viewer FEEL the moment (not a product-catalog shot), film-still aesthetic, advertising quality, realistic texture, beautiful depth of field. Aspect ratio "+ratio+", vertical for mobile landing page, leave clean negative space for text overlay. "+(withprod?(PRODREF()+" "):"Do NOT show any product/bottle/packaging/logo — pure emotional lifestyle storytelling. ")+BRANDDNA()+" "+AUDIENCE()+"Negative: no on-image text, no watermark, no distorted hands, no other brand logos, no NSFW.";}
+
+const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',true],['scent1','4/5',true],['scent2','4/5',true],['scent3','4/5',true],['before','1/1',false],['after','1/1',true],['video','16/9',false],['ugc1','1/1',true],['ugc2','1/1',true],['ugc3','1/1',true],['ugc4','1/1',true],['ugc5','1/1',true],['ugc6','1/1',true]];
+
+// ---- STEP1 AI configs ----
+async function genConfigs(){
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),sheet:$('#sheet').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
+  if(!CFG.key){alert('Nhập API key');return;}
+  $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
+  const sys=`You are a senior DTC direct-response strategist + art director. Create ${CFG.n} DISTINCT high-converting landing-page angles, each a different insight/pain. ALL customer-facing copy MUST be written in ${CFG.lang} with correct spelling/diacritics/script. Analyze ALL inputs (language/market, brand, product, brand guideline, CAMPAIGN GOAL, KEY MESSAGE and TARGET AUDIENCE) and design copy AND image scenes that fit the campaign goal and resonate with the target audience. Return ONLY valid JSON:
+{"dna":"<Brand Visual DNA in ENGLISH>","audience_visual":"<short ENGLISH casting note: who appears in the images — age range, gender, look/ethnicity if relevant, setting, lifestyle, emotional vibe — matching the TARGET AUDIENCE and CAMPAIGN GOAL>","ui":{"cta":"","order_h":"","form_name":"","form_phone":"","form_address":"","form_qty":"","form_btn":"","thanks_h":"","thanks_p":"","sec_solution":"","sec_choose":"","sec_reasons":"","sec_story":"","sec_proof_fallback":"","sec_video":"","before":"","after":"","urgency_h":"","guarantee":"","marquee":"","reasons":["r1","r2","r3","r4"],"faqs":[{"q":"","a":""},{"q":"","a":""},{"q":"","a":""},{"q":"","a":""}]},"angles":[{...}]}
+ui = localized UI labels in ${CFG.lang}. angles[i]: slug(en-kebab), ey(short eyebrow EN), h1(${CFG.lang}, may contain one <span class='hl'>...</span>), sub(${CFG.lang}), pains(3 strings ${CFG.lang}, may use <b>), agitq(${CFG.lang} 1 emotional line), stitle(${CFG.lang}), slead(${CFG.lang}), proof(${CFG.lang}), testi(3 objects {q ${CFG.lang}, n name, a "age, city"}), case({q ${CFG.lang}, n, m "age, city", r "short result ${CFG.lang}"}), ft(${CFG.lang}), fs(${CFG.lang}), acc(hex), acc2(hex), images:{hero,agitate,product,scent1,scent2,scent3,before,after,video,ugc} each = a concise ENGLISH cinematic SCENE (no lighting/lens boilerplate) that DEPICTS THE TARGET AUDIENCE PERSONA and reflects the CAMPAIGN GOAL/MESSAGE (who is in frame, their age/look, setting, emotion). hero/agitate/before = emotional storytelling with NO product; product/scent*/after = with product. Copy must hit the insight hard, hook-first (not product-first). Diversify angles.`;
+  const user=`PRODUCT: ${CFG.product}. Price ${CFG.pold} -> ${CFG.pnew} (save ${CFG.psave}). Brand ${CFG.brand}. Currency ${CFG.curr}.\nCAMPAIGN GOAL: ${CFG.goal}. KEY MESSAGE: ${CFG.msg||"(infer a strong one)"}. TARGET AUDIENCE: ${CFG.audience||"(infer from product)"}.
+${CFG.guide? "BRAND GUIDELINE: "+CFG.guide : ""}
+${CFG.dna? "BRAND DNA given: "+CFG.dna : "Create a fitting Brand Visual DNA."}
+WINNING IDEA/SCRIPT:\n${$('#idea').value.trim()||'(empty — infer from product)'}`;
+  try{
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.tmodel}:generateContent?key=${encodeURIComponent(CFG.key)}`;
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:sys+"\n\n"+user}]}],generationConfig:{responseMimeType:"application/json",temperature:0.9}})});
+    const j=await res.json(); if(!res.ok) throw new Error((j.error&&j.error.message)||('HTTP '+res.status));
+    let txt=j.candidates[0].content.parts.map(p=>p.text||'').join('').replace(/^```json/i,'').replace(/```$/,'').trim();
+    const data=JSON.parse(txt);
+    if(data.dna&&!CFG.dna)CFG.dna=data.dna; CFG.audienceVisual=data.audience_visual||CFG.audience||""; UI=data.ui||{}; ANGLES=data.angles||[];
+    LPS=ANGLES.map(a=>({a,videos:'',b64:{},slots:buildSlots(a)}));
+    $('#prog1').style.width='100%';$('#st1').innerHTML=`<b style="color:var(--acc)">Đã thiết kế ${ANGLES.length} LP (${CFG.lang}).</b> Sang bước 2 tạo ảnh.`;
+    $('#genImg').disabled=false; renderLPgrid();
+  }catch(e){$('#st1').innerHTML='<span style="color:var(--bad)">Lỗi: '+e.message+'</span>';}
+  $('#genCfg').disabled=false;
+}
+function buildSlots(a){const I=a.images||{};const o={};SLOTDEFS.forEach(([k,ratio,prod])=>{const base=k.replace(/[0-9]/g,'').replace('ugc','ugc');const sceneKey=k.startsWith('ugc')?'ugc':k;let scene=I[sceneKey]||sceneKey;if(k.startsWith('ugc'))scene=scene+' #'+k.slice(3);o[k]={scene,ratio,prod,prompt:P(scene,ratio,prod),name:'assets/'+slug(k)+'.jpg'};});return o;}
+
+// ---- images ----
+function toJpeg(u){return new Promise((rs,rj)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);rs(c.toDataURL('image/jpeg',0.86).split(',')[1]);};im.onerror=rj;im.src=u;});}
+async function genImage(prompt,ratio){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${CFG.imodel}:generateContent?key=${encodeURIComponent(CFG.key)}`;
+  const parts=[{text:prompt}];REF.forEach(p=>parts.push({inline_data:{mime_type:p.mime,data:p.data}}));
+  const mk=ic=>JSON.stringify({contents:[{role:'user',parts}],generationConfig:ic?{responseModalities:["IMAGE"],imageConfig:{aspectRatio:rconf(ratio)}}:{responseModalities:["IMAGE"]}});
+  let res,useIC=true;for(let a=0;a<6;a++){res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:mk(useIC)});if(res.ok)break;if(res.status===400&&useIC){useIC=false;continue;}if(res.status===429||res.status>=500){await new Promise(r=>setTimeout(r,1200*Math.pow(1.8,a)+Math.random()*900));continue;}break;}
+  const j=await res.json();if(!res.ok)throw new Error((j.error&&j.error.message)||('HTTP '+res.status));
+  const cand=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];const img=cand.find(p=>p.inlineData||p.inline_data);if(!img)throw new Error('no image');const d=img.inlineData||img.inline_data;return await toJpeg('data:'+(d.mimeType||d.mime_type||'image/png')+';base64,'+d.data);
+}
+function renderLPgrid(){$('#lpgrid').innerHTML=LPS.map((lp,i)=>`<div class="lp"><div class="e">${esc(lp.a.ey||'')}</div><div class="t">${esc(lp.a.slug||('lp'+i))}</div><div class="st" id="lpst${i}">chờ build</div><div class="rowb"><button class="sec" id="lped${i}" disabled onclick="openEditor(${i})">Sửa</button><button class="sec" id="lppv${i}" disabled onclick="preview(${i})">Preview</button><button id="lpdl${i}" disabled onclick="downloadLP(${i})">Tải</button></div></div>`).join('');}
+
+async function buildAll(){
+  if(!REF.length && !confirm('Chưa upload ảnh sản phẩm — vẫn tạo? (ảnh sẽ không có sản phẩm thật)'))return;
+  $('#genImg').disabled=true;
+  const tasks=[];LPS.forEach((lp,li)=>Object.keys(lp.slots).forEach(k=>tasks.push({li,k})));
+  let done=0,total=tasks.length,N=Math.max(1,Math.min(24,parseInt($('#conc').value)||8)),t0=Date.now();
+  async function worker(){while(tasks.length){const t=tasks.shift();try{LPS[t.li].b64[t.k]=await genImage(LPS[t.li].slots[t.k].prompt,LPS[t.li].slots[t.k].ratio);}catch(e){LPS[t.li].b64[t.k]=null;}done++;$('#prog2').style.width=(done/total*100)+'%';$('#st2').textContent=`Tạo ảnh song song (${N})… ${done}/${total} · ${((Date.now()-t0)/1000).toFixed(0)}s`;const st=$('#lpst'+t.li);if(st)st.textContent='ảnh '+Object.keys(LPS[t.li].b64).length+'/'+Object.keys(LPS[t.li].slots).length;}}
+  const ws=[];for(let w=0;w<Math.min(N,total);w++)ws.push(worker());await Promise.all(ws);
+  LPS.forEach((lp,i)=>{$('#lpst'+i).innerHTML='<b style="color:var(--acc)">✓ xong</b>';['lped','lppv','lpdl'].forEach(p=>$('#'+p+i).disabled=false);});
+  $('#st2').innerHTML=`<b style="color:var(--acc)">Hoàn tất ${done}/${total} ảnh.</b> Bấm "Sửa" để chỉnh copy/ảnh + thêm video KOC, "Preview" để xem, rồi "Tải".`;
+  $('#dlAll').disabled=false;$('#genImg').disabled=false;
+}
+
+// ---- video embeds ----
+function ytId(u){const m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);return m?m[1]:null;}
+function ttId(u){const m=u.match(/video\/(\d+)/);return m?m[1]:null;}
+function videoEmbeds(links){const arr=(links||'').split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);if(!arr.length)return '';
+  const slides=arr.map(u=>{let y=ytId(u);if(y)return `<div class="vslide"><iframe src="https://www.youtube.com/embed/${y}" allowfullscreen loading="lazy" style="width:100%;aspect-ratio:9/16;border:0;border-radius:14px"></iframe></div>`;let t=ttId(u);if(t)return `<div class="vslide"><iframe src="https://www.tiktok.com/embed/v2/${t}" allowfullscreen loading="lazy" style="width:100%;aspect-ratio:9/16;border:0;border-radius:14px"></iframe></div>`;return `<div class="vslide"><a href="${esc(u)}" target="_blank" style="display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;background:var(--s2);border-radius:14px;color:var(--acc)">▶ Xem video</a></div>`;}).join('');
+  return slides;}
+
+// ---- render LP (srcOf: key -> img src) ----
+function L(k,fb){return (UI[k]&&String(UI[k]).trim())||fb;}
+function renderLP(lp,srcOf){
+  const a=lp.a,C=CFG,acc=a.acc||'#ff5a7a',acc2=a.acc2||'#ffb36b';
+  const img=(k,ratio)=>{const s=srcOf(k);return s?`<img src="${s}" alt="${esc(slug(k))}" loading="lazy" style="width:100%;display:block;border-radius:16px;aspect-ratio:${ratio};object-fit:cover">`:`<div class="media" style="aspect-ratio:${ratio}"><div class="ph">ảnh ${k}</div></div>`;};
+  const pains=(a.pains||[]).map(p=>`<div class="pain"><div class="x">✕</div><div>${p}</div></div>`).join('');
+  const testi=(a.testi||[]).map(t=>`<div class="tcard"><div class="stars">★★★★★</div><p style="margin-top:8px;color:#e6ebf2">"${esc(t.q)}"</p><div class="who"><div class="av"></div><div><b>${esc(t.n)}</b> <span>· ${esc(t.a)}</span></div></div></div>`).join('');
+  const ugc=[1,2,3,4,5,6].map(k=>img('ugc'+k,'1/1')).join('');
+  const faqs=(UI.faqs||[{q:'?',a:'.'}]).map(f=>`<details class="faq"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
+  const reasons=(UI.reasons||['','','','']);const emo=['💧','⚖️','🍸','✨'];
+  const cs=a.case||{};
+  const vids=videoEmbeds(lp.videos);
+  const vidsec=vids?`<section><span class="eyebrow">${L('sec_video','Review thật từ KOC')}</span><h2>${L('sec_video','Review thật từ KOC')}</h2><div class="vcaro">${vids}</div></section>`:'';
+  const css=LPCSS.replace(/__ACC__/g,acc).replace(/__ACC2__/g,acc2);
+  return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><style>${css}</style></head><body><div class="wrap">
+<div class="marq"><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span></div>
+<div class="nav"><div class="logo">${esc(C.brand)}</div><div class="mini">⭐ 5.0 · 400.000+</div></div>
+<section class="hero"><span class="eyebrow">${esc(a.ey||'')}</span><h1>${a.h1||''}</h1><p class="sub">${esc(a.sub||'')}</p><div style="margin:16px 0">${img('hero','4/5')}</div><div class="price"><span class="old">${esc(C.pold)}</span><span class="new">${esc(C.pnew)}</span></div><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY — COD'))} →</a><div class="chips"><span class="chiptrust">🏆 Top 1</span><span class="chiptrust">👥 400K+</span><span class="chiptrust">⭐ 5.0</span></div></section>
+<section><h2>${(a.pains&&a.pains.length)?'':''}${esc(a.ptitle||'')}</h2><div style="margin-top:6px">${pains}</div></section>
+<section><div class="fullq" style="aspect-ratio:16/9">${img('agitate','16/9')}<div class="ov"><p>"${esc(a.agitq||'')}"</p></div></div></section>
+<section><span class="eyebrow">${L('sec_solution','Giải pháp')}</span><h2>${esc(a.stitle||'')}</h2><p style="margin:8px 0 14px">${esc(a.slead||'')}</p>${img('product','1/1')}<div class="sp"></div><a href="#order" class="btn ghost">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
+<section><span class="eyebrow">${L('sec_choose','Chọn của bạn')}</span><h2>${L('sec_choose','Chọn của bạn')}</h2><div style="margin-top:12px">${img('scent1','4/5')}<div class="sp2"></div>${img('scent2','4/5')}<div class="sp2"></div>${img('scent3','4/5')}</div></section>
+<section><span class="eyebrow">${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</span><h2>${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</h2><div class="bgrid">${reasons.map((r,i)=>`<div class="ben"><div class="e">${emo[i]||'✔'}</div><b>${esc(r)}</b></div>`).join('')}</div></section>
+<section><h2>${L('before','TRƯỚC')} & ${L('after','SAU')}</h2><div class="ba" style="margin-top:12px"><div><div class="lbl b1">${L('before','TRƯỚC')}</div>${img('before','1/1')}</div><div><div class="lbl b2">${L('after','SAU')}</div>${img('after','1/1')}</div></div></section>
+<section><div class="stats"><div class="stat"><div class="n" data-count="400000" data-suf="+">0</div><div class="l">+</div></div><div class="stat"><div class="n" data-count="12000" data-suf="+">0</div><div class="l">★</div></div><div class="stat"><div class="n" data-count="98" data-suf="%">0</div><div class="l">%</div></div></div></section>
+<section><span class="eyebrow">${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</span><h2>${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</h2><div class="rate" style="margin-top:12px"><div class="sc">4.9</div><div><div class="stars">★★★★★</div></div></div><div class="caro">${testi}</div><div class="sp"></div>${img('video','16/9')}<div class="ugc">${ugc}</div></section>
+${vidsec}
+<section><div class="case"><span class="eyebrow">${L('sec_story','Câu chuyện thật')}</span><h2 style="margin-top:6px">${esc(cs.n||'')}${cs.m?', '+esc(cs.m):''}</h2><p style="margin-top:10px;color:#e6ebf2">"${esc(cs.q||'')}"</p><div class="res">${cs.r?'<span>'+esc(cs.r)+'</span>':''}</div></div></section>
+<section class="center"><span class="eyebrow">${L('urgency_h','Ưu đãi có hạn')}</span><h2>${L('urgency_h','Ưu đãi có hạn')}</h2><div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value" style="text-align:left"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>↓</span><span class="save">${esc(C.psave)}</span></div></div></section>
+<section id="order"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
+<section><div class="guar"><div class="ic">🛡️</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
+<section><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
+<section class="center hero"><h2>${esc(a.ft||'')}</h2><p class="sub">${esc(a.fs||'')}</p><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
+<div class="foot"><b>${esc(C.brand)}</b></div></div>
+<div class="sticky"><div class="p"><b>${esc(C.pnew)}</b> <s>${esc(C.pold)}</s></div><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY'))} →</a></div>
+<script>var SHEET_ENDPOINT=${JSON.stringify(C.sheet||'')};var LP_NAME=${JSON.stringify((a.h1||'').replace(/<[^>]+>/g,''))};<\/script>
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',${JSON.stringify(C.pixel)});fbq('track','PageView');<\/script>
+<script>${LPRUNTIME}<\/script></body></html>`;
+}
+function srcData(lp){return k=>lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):null;}
+function srcAsset(lp){return k=>lp.b64[k]?lp.slots[k].name:null;}
+
+// ---- preview ----
+function preview(i){const lp=LPS[i];const html=renderLP(lp,srcData(lp));const m=$('#modal');$('#modalbody').innerHTML='<h2 style="margin-bottom:8px">Preview: '+esc(lp.a.slug)+'</h2><iframe class="prev" id="pvf"></iframe>';m.style.display='flex';const f=$('#pvf');f.srcdoc=html;}
+
+// ---- editor ----
+function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed.style.display='block';
+  const tf=(label,key,ml)=>`<label>${label}</label><textarea data-f="${key}" style="${ml?'min-height:'+ml+'px':''}" oninput="LPS[${i}].a['${key}']=this.value">${esc(a[key]||'')}</textarea>`;
+  let imgs='';Object.keys(lp.slots).forEach(k=>{const s=lp.slots[k];const src=lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):'';imgs+=`<div class="imgcell"><div class="k">${k} (${s.ratio})</div>${src?`<img src="${src}" id="im_${i}_${k}">`:`<div style="aspect-ratio:1/1;background:#0a0d12;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--bad)">lỗi</div>`}<textarea oninput="LPS[${i}].slots['${k}'].scene=this.value;LPS[${i}].slots['${k}'].prompt=P(this.value,'${s.ratio}',${s.prod})">${esc(s.scene)}</textarea><button class="sec" style="width:100%;margin-top:4px;padding:6px;font-size:12px" onclick="regen(${i},'${k}',this)">Tạo lại ảnh</button></div>`;});
+  ed.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:16px">✏️ Sửa LP: ${esc(a.slug)}</h2><button class="sec" onclick="document.getElementById('editor').style.display='none'">Đóng</button></div>
+  <div class="ed-grid" style="margin-top:10px">
+   <div>${tf('Eyebrow','ey')}${tf('H1 (có thể chứa &lt;span class=hl&gt;)','h1',60)}${tf('Sub','sub',60)}${tf('Tiêu đề giải pháp','stitle')}${tf('Mô tả giải pháp','slead',60)}${tf('Câu agitate (nỗi đau)','agitq',54)}${tf('Proof heading','proof')}${tf('CTA cuối - tiêu đề','ft')}${tf('CTA cuối - phụ đề','fs')}
+     <label>🎬 Link video KOC (YouTube/TikTok — mỗi dòng 1 link)</label><textarea oninput="LPS[${i}].videos=this.value" placeholder="https://www.tiktok.com/@.../video/123...\nhttps://youtu.be/...">${esc(lp.videos||'')}</textarea>
+   </div>
+   <div><label>Hình ảnh từng section (sửa mô tả → Tạo lại)</label><div class="imgrow">${imgs}</div></div>
+  </div>
+  <div class="rowb" style="display:flex;gap:8px;margin-top:14px"><button onclick="preview(${i})" class="big sec" style="flex:1">👁 Preview</button><button onclick="downloadLP(${i})" class="big" style="flex:1">⬇️ Tải LP này</button></div>`;
+  ed.scrollIntoView({behavior:'smooth'});
+}
+async function regen(i,k,btn){btn.disabled=true;btn.textContent='...';try{const lp=LPS[i];lp.b64[k]=await genImage(lp.slots[k].prompt,lp.slots[k].ratio);const im=$('#im_'+i+'_'+k);if(im)im.src='data:image/jpeg;base64,'+lp.b64[k];btn.textContent='✓';}catch(e){btn.textContent='lỗi';}setTimeout(()=>{btn.disabled=false;btn.textContent='Tạo lại ảnh';},1200);}
+
+// ---- download ----
+async function downloadLP(i){const lp=LPS[i];const zip=new JSZip();zip.file('index.html',renderLP(lp,srcAsset(lp)));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
+async function downloadAll(){const zip=new JSZip();const site=zip.folder('site');LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});});var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
+zip.file('deploy.ps1',['param([string]$Project="'+proj+'")','$ErrorActionPreference="Stop"','if(-not (Get-Command wrangler -ErrorAction SilentlyContinue)){ Write-Host "Cai wrangler..."; npm i -g wrangler }','Write-Host "Neu chua login: chay  wrangler login"','wrangler pages project create $Project --production-branch=main 2>$null','wrangler pages deploy "$PSScriptRoot\\site" --project-name=$Project','Write-Host "XONG -> https://$Project.pages.dev/<ten-lp>/"'].join('\r\n'));
+zip.file('deploy.bat',['@echo off','powershell -ExecutionPolicy Bypass -File "%~dp0deploy.ps1"','pause'].join('\r\n'));
+zip.file('deploy.sh',['#!/usr/bin/env bash','set -e','PROJECT="${1:-'+proj+'}"','command -v wrangler >/dev/null || npm i -g wrangler','wrangler pages project create "$PROJECT" --production-branch=main 2>/dev/null || true','wrangler pages deploy "$(cd "$(dirname "$0")" && pwd)/site" --project-name="$PROJECT"','echo "XONG -> https://$PROJECT.pages.dev/"'].join('\n'));
+zip.file('README.txt',['== DEPLOY '+LPS.length+' LANDING PAGE LEN CLOUDFLARE ==','','LAN DAU (1 lan duy nhat):','  1) Cai Node.js (nodejs.org)','  2) Mo PowerShell/Terminal go:  wrangler login  (dang nhap Cloudflare tren trinh duyet)','','DEPLOY:','  WINDOWS : bam dup chuot file  deploy.bat','  MAC/LINUX: chmod +x deploy.sh && ./deploy.sh','','KET QUA: https://'+proj+'.pages.dev/<ten-lp>/','Doi ten project: sua bien Project trong deploy.ps1 (Windows) hoac chay  ./deploy.sh ten-khac (Mac).','','Moi LP nam o 1 thu muc trong /site. Form COD + Meta Pixel da gan san.'].join('\r\n'));
+dl(await zip.generateAsync({type:'blob'}),(CFG.brand||'lp')+'-DEPLOY-KIT.zip');}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+
+const LPCSS=`:root{--bg:#0b0d11;--s1:#13171e;--s2:#1b212b;--ink:#f3f6fa;--mut:#98a2b2;--acc:__ACC__;--acc2:__ACC2__;--line:#262d39;--ok:#46d6a8}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.62;padding-bottom:76px}
+.wrap{max-width:560px;margin:0 auto}section{padding:36px 18px}h1{font-size:31px;font-weight:900;line-height:1.18}h2{font-size:23px;font-weight:800}
+.eyebrow{color:var(--acc);font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;display:inline-block;margin-bottom:8px}
+p{color:#d6dce6;font-size:15.5px}.mut{color:var(--mut)}.center{text-align:center}.sp{height:14px}.sp2{height:10px}
+.btn{display:inline-block;width:100%;text-align:center;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0c0f08;font-weight:900;font-size:16px;padding:16px;border-radius:14px;text-decoration:none;box-shadow:0 12px 30px -8px var(--acc)}.btn.ghost{background:transparent;border:1.6px solid var(--acc);color:var(--acc);box-shadow:none}
+.marq{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#0c0f08;font-weight:800;font-size:12.5px;white-space:nowrap;overflow:hidden;padding:8px 0}.marq span{display:inline-block;padding-left:100%;animation:mq 17s linear infinite}@keyframes mq{to{transform:translateX(-100%)}}
+.nav{position:sticky;top:0;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:11px 18px;background:rgba(11,13,17,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}.logo{font-weight:900;letter-spacing:3px}.mini{font-size:11px;color:var(--mut)}
+.hero{text-align:center;padding-top:28px;background:radial-gradient(130% 70% at 50% -10%,var(--s2),var(--bg) 72%)}.hero .sub{margin:12px 0 16px;color:#e7ecf3}.hero h1 .hl{background:linear-gradient(120deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.price{display:inline-flex;gap:10px;align-items:baseline;margin:10px 0 14px}.price .old{color:var(--mut);text-decoration:line-through}.price .new{font-size:34px;font-weight:900;color:var(--acc)}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}.chiptrust{background:var(--s1);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700}
+.media{position:relative;width:100%;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--s1)}.media .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 28%,transparent),transparent)}
+.pain{display:flex;gap:12px;align-items:flex-start;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}.pain .x{width:26px;height:26px;flex:none;border-radius:50%;background:rgba(224,70,59,.16);color:#ff7a6e;display:flex;align-items:center;justify-content:center;font-weight:900}.pain b{color:#fff}
+.fullq{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line)}.fullq .ov{position:absolute;inset:0;display:flex;align-items:flex-end;background:linear-gradient(180deg,transparent,rgba(0,0,0,.72));padding:18px}.fullq .ov p{font-size:18px;font-weight:800;color:#fff}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}.ben{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}.ben .e{font-size:26px}.ben b{display:block;font-size:13.5px;margin-top:6px}
+.ba{display:flex;gap:10px}.ba>div{flex:1}.ba .lbl{font-weight:800;font-size:13px;margin-bottom:6px}.ba .b1{color:#ff7a6e}.ba .b2{color:var(--ok)}
+.stats{display:flex;gap:10px}.stat{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:16px 6px;text-align:center}.stat .n{font-size:24px;font-weight:900;color:var(--acc)}.stat .l{font-size:13px;color:var(--mut)}
+.rate{display:flex;align-items:center;gap:14px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:15px}.rate .sc{font-size:36px;font-weight:900;color:var(--acc)}.stars{color:var(--acc)}
+.caro,.vcaro{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:14px 0 4px}.tcard{flex:0 0 84%;scroll-snap-align:center;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:14px}.tcard .who{display:flex;align-items:center;gap:10px;margin-top:11px}.tcard .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2))}.tcard .who b{font-size:14px}.tcard .who span{font-size:12px;color:var(--mut)}
+.vslide{flex:0 0 70%;scroll-snap-align:center}
+.ugc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.case{background:var(--s1);border:1px solid var(--acc);border-radius:18px;padding:16px}.case .res{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.case .res span{background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc);font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:999px}
+.cd{display:flex;gap:9px;justify-content:center;margin:14px 0}.cd .u{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:56px;text-align:center}.cd .u .n{font-size:24px;font-weight:900}
+.value{background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--acc);border-radius:18px;padding:18px}.vr{display:flex;justify-content:space-between;font-size:14.5px;padding:6px 0}.vr.tot{border-top:1px dashed var(--line);margin-top:6px;padding-top:11px;font-weight:800}.save{color:var(--acc);font-weight:800}
+.form{background:var(--s1);border:1px solid var(--acc);border-radius:18px;padding:19px}.form label{display:block;font-size:12.5px;color:var(--mut);margin:11px 0 5px;font-weight:700}.form input,.form select{width:100%;background:#070809;border:1px solid var(--line);border-radius:11px;padding:14px;color:#fff;font-size:15px}.thanks{display:none;text-align:center;padding:26px 10px}.thanks .big{font-size:48px}
+.guar{display:flex;gap:13px;background:color-mix(in srgb,var(--ok) 9%,transparent);border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);border-radius:16px;padding:16px;font-size:14px}.guar .ic{font-size:30px}
+.faq{border:1px solid var(--line);border-radius:13px;margin-bottom:9px;overflow:hidden;background:var(--s1)}.faq summary{padding:15px;font-weight:700;cursor:pointer;font-size:14px;list-style:none;display:flex;justify-content:space-between}.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:"+";color:var(--acc);font-weight:900}.faq[open] summary:after{content:"–"}.faq p{padding:0 15px 15px;font-size:13.5px}
+.foot{background:#070809;color:var(--mut);font-size:12px;text-align:center;padding:24px 18px}.foot b{color:#cfd6df}
+.sticky{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(11,13,17,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:9px 14px;display:flex;align-items:center;gap:10px;max-width:560px;margin:0 auto}.sticky .p b{color:var(--acc);font-size:18px;font-weight:900}.sticky .p s{color:var(--mut);font-size:12px}.sticky .btn{margin:0;flex:1;padding:13px;font-size:15px}`;
+
+const LPRUNTIME=`var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){cup(x.target);io.unobserve(x.target);}})},{threshold:.6});function cup(el){var t=+el.dataset.count,suf=el.dataset.suf||'',st=null;function step(ts){if(!st)st=ts;var p=Math.min((ts-st)/1400,1);var v=Math.floor(p*t);el.textContent=(v>=1000?v.toLocaleString():v)+suf;if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}document.querySelectorAll('[data-count]').forEach(function(el){io.observe(el)});
+(function(){var end=Date.now()+22*3600*1000;function t(){var d=Math.max(0,end-Date.now()),h=Math.floor(d/3.6e6),m=Math.floor(d%3.6e6/6e4),s=Math.floor(d%6e4/1e3);var H=document.getElementById('cd-h');if(!H)return;H.textContent=String(h).padStart(2,'0');document.getElementById('cd-m').textContent=String(m).padStart(2,'0');document.getElementById('cd-s').textContent=String(s).padStart(2,'0');}t();setInterval(t,1000);})();
+var cf=document.getElementById('codForm');if(cf)cf.addEventListener('submit',function(e){e.preventDefault();var f=e.target;var data={lp:LP_NAME,name:f.name.value,phone:f.phone.value,address:f.address.value,qty:f.qty.value,ts:new Date().toISOString()};try{fbq('track','Lead',{content_name:LP_NAME});}catch(x){}function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});`;
+</script>
+</body></html>
