@@ -50,9 +50,18 @@ export async function getSheetConfig(accessToken, sheetId, fetchImpl = fetch) {
   return out;
 }
 
-// Append one row to the "Orders" tab of a spreadsheet.
-export async function appendRow(accessToken, sheetId, values, fetchImpl = fetch) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Orders!A1:append`
+// Create a tab if it doesn't exist (ignore "already exists" errors).
+export async function ensureTab(accessToken, sheetId, title, fetchImpl = fetch) {
+  await fetchImpl(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title } } }] }),
+  }).catch(() => {});
+}
+
+// Append one row to a tab (default "Orders") of a spreadsheet.
+export async function appendRow(accessToken, sheetId, values, fetchImpl = fetch, tab = 'Orders') {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${tab}!A1:append`
     + '?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS';
   const r = await fetchImpl(url, {
     method: 'POST',
