@@ -92,8 +92,12 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
     <div><label>🏢 Tên công ty (cho trang Chính sách)</label><input id="company" placeholder="VD: Công ty TNHH ONIIZ"></div>
   </div>
   <div class="row">
-    <div><label>📧 Email liên hệ (trang chính sách)</label><input id="cemail" placeholder="lienhe@oniiz.vn"></div>
-    <div><label>☎️ SĐT liên hệ (trang chính sách)</label><input id="cphone" placeholder="0909..."></div>
+    <div><label>📧 Email liên hệ (chân trang + chính sách)</label><input id="cemail" placeholder="lienhe@oniiz.vn"></div>
+    <div><label>☎️ Hotline (chân trang)</label><input id="cphone" placeholder="0909..."></div>
+  </div>
+  <div class="row">
+    <div><label>📍 Địa chỉ doanh nghiệp (chân trang)</label><input id="caddr" placeholder="VD: 12 Nguyễn Huệ, Q1, TP.HCM"></div>
+    <div><label>🧾 MST / Số GPKD (chân trang)</label><input id="cmst" placeholder="VD: 0312345678"></div>
   </div>
   <div class="row">
     <div><label>🎨 Giao diện (template)</label><select id="template"><option value="default">Mặc định (cinematic tối)</option><option value="light">Sáng / tối giản</option><option value="shopee">Shopee (cam)</option><option value="tiktok">TikTok Shop (đen-hồng)</option><option value="hasaki">Hasaki (xanh lá)</option></select></div>
@@ -117,6 +121,7 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   <label>Brand Visual DNA (EN) — để trống AI tự tạo</label>
   <textarea id="dna" style="min-height:46px"></textarea>
   <button class="big" id="genCfg" onclick="genConfigs()" style="margin-top:12px">🤖 AI thiết kế Landing Page (đa ngôn ngữ)</button>
+  <button class="sec" type="button" id="lpf-quickfill" onclick="lpfQuickFill()" style="margin-top:8px;padding:8px 12px">⚡ Điền nhanh (dữ liệu demo để thử ngay)</button>
   <div class="bar"><i id="prog1"></i></div><div id="st1" class="muted"></div>
 </div>
 
@@ -181,8 +186,9 @@ function P(scene,ratio,withprod){return scene+". Cinematic photoreal STORYTELLIN
 const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',true],['scent1','4/5',true],['scent2','4/5',true],['scent3','4/5',true],['before','1/1',false],['after','1/1',true],['video','16/9',false],['ugc1','1/1',true],['ugc2','1/1',true],['ugc3','1/1',true],['ugc4','1/1',true],['ugc5','1/1',true],['ugc6','1/1',true]];
 
 // ---- STEP1 AI configs ----
+function lpfQuickFill(){var d={brand:'ONIIZ',product:'Combo 3 Bọt Vệ Sinh Nam ONIIZ (Beachy, Juicy, Milky)',pold:'790.000đ',pnew:'390.000đ',psave:'Tiết kiệm 400.000đ',msg:'Tự tin từ bên trong — sạch thơm cả ngày',audience:'Nam 22–40, quan tâm chăm sóc bản thân, mua online/COD',company:'Hộ kinh doanh ONIIZ',cemail:'lienhe@oniiz.vn',cphone:'0909000111',caddr:'12 Nguyễn Huệ, Quận 1, TP.HCM',cmst:'0312345678'};Object.keys(d).forEach(function(k){var el=document.getElementById(k);if(el&&!el.value)el.value=d[k];});var st=document.getElementById('st1');if(st)st.textContent='✅ Đã điền dữ liệu demo. Nhập Gemini API key rồi bấm "AI thiết kế Landing Page".';}
 async function genConfigs(){
-  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),sheet:$('#sheet').value.trim(),clarity:$('#clarity').value.trim(),ga4:$('#ga4').value.trim(),metatoken:$('#metatoken').value.trim(),ttpixel:$('#ttpixel').value.trim(),tttoken:$('#tttoken').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),cphone:$('#cphone').value.trim(),template:$('#template').value,qrbank:$('#qrbank').value.trim().toUpperCase(),qracct:$('#qracct').value.trim(),qrname:$('#qrname').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),sheet:$('#sheet').value.trim(),clarity:$('#clarity').value.trim(),ga4:$('#ga4').value.trim(),metatoken:$('#metatoken').value.trim(),ttpixel:$('#ttpixel').value.trim(),tttoken:$('#tttoken').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),cphone:$('#cphone').value.trim(),caddr:$('#caddr').value.trim(),cmst:$('#cmst').value.trim(),template:$('#template').value,qrbank:$('#qrbank').value.trim().toUpperCase(),qracct:$('#qracct').value.trim(),qrname:$('#qrname').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
   if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
   if(!CFG.key){alert('Nhập API key');return;}
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
@@ -258,6 +264,9 @@ function renderLP(lp,srcOf){
   const skinCss=(typeof window!=='undefined'&&window.__LPF_skins&&C.template)?window.__LPF_skins.skinCSS(C.template):'';
   const skinTag=skinCss?`<style>${skinCss}</style>`:'';
   const qrBlock=(C.qrbank&&C.qracct)?`<section style="text-align:center;padding:24px 18px"><span class="eyebrow">Hoặc chuyển khoản giữ đơn</span><div style="max-width:300px;margin:10px auto;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px"><img id="lpf-qr" alt="VietQR" style="width:230px;height:230px;background:#fff;border-radius:12px;padding:6px"><div style="font-size:13.5px;margin-top:10px">${esc(C.qrbank)} · <b>${esc(C.qracct)}</b>${C.qrname?' · '+esc(C.qrname):''}</div><div style="font-size:13.5px;margin-top:4px">Nội dung CK: <b id="lpf-ordercode" style="color:var(--acc)"></b></div><div class="mut" style="font-size:12px;margin-top:6px">Quét QR hoặc CK đúng nội dung để shop xác nhận đơn nhanh.</div></div></section>`:'';
+  const fyear=(new Date()).getFullYear();
+  const contactBits=[C.caddr?('📍 '+esc(C.caddr)):'',C.cphone?('☎️ '+esc(C.cphone)):'',C.cemail?('✉️ '+esc(C.cemail)):'',C.cmst?('MST/GPKD: '+esc(C.cmst)):''].filter(Boolean).join(' · ');
+  const footerBlock=`<div class="foot"><b>${esc(C.company||C.brand||'')}</b>${contactBits?'<br>'+contactBits:''}<br><span style="opacity:.85">🔒 Thông tin của bạn được bảo mật theo Nghị định 13/2023/NĐ-CP.</span><br style="margin-top:6px"><a href="../privacy.html" style="color:#9aa3b2">Chính sách bảo mật</a> · <a href="../terms.html" style="color:#9aa3b2">Điều khoản</a> · © ${fyear} ${esc(C.brand||'')}</div>`;
   const ttqTag=C.ttpixel?`<script>!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=d.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};ttq.load(${JSON.stringify(C.ttpixel)});ttq.page()}(window,document,"ttq");<\/script>`:'';
   return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><style>${css}</style>${skinTag}${clarityTag}${ga4Tag}${ttqTag}</head><body><div class="wrap">
 <div class="marq"><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span></div>
@@ -276,7 +285,7 @@ ${vidsec}
 <section class="center"><span class="eyebrow">${L('urgency_h','Ưu đãi có hạn')}</span><h2>${L('urgency_h','Ưu đãi có hạn')}</h2><div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value" style="text-align:left"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>↓</span><span class="save">${esc(C.psave)}</span></div></div></section>
 <section id="order"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
 ${qrBlock}
-<div style="text-align:center;padding:20px 14px;font-size:12px;color:#7a828f">${esc(C.company||C.brand||'')} · <a href="../privacy.html" style="color:#9aa3b2">Chính sách bảo mật</a> · <a href="../terms.html" style="color:#9aa3b2">Điều khoản</a></div>
+${footerBlock}
 <section><div class="guar"><div class="ic">🛡️</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
 <section><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
 <section class="center hero"><h2>${esc(a.ft||'')}</h2><p class="sub">${esc(a.fs||'')}</p><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
@@ -377,6 +386,7 @@ window.__LPF_collectSiteFiles = function () {
   // Decree 13/2023 policy pages at site root (LPs link ../privacy.html, ../terms.html).
   if (window.__LPF_policies) {
     var biz = { brand: CFG.brand, company: CFG.company, email: CFG.cemail, phone: CFG.cphone,
+      address: CFG.caddr, mst: CFG.cmst,
       pixel: CFG.pixel, metaToken: CFG.metatoken, tiktokPixel: CFG.ttpixel, ga4: CFG.ga4,
       clarity: CFG.clarity, sheet: CFG.sheet };
     files.push({ path: 'privacy.html', content: window.__LPF_policies.buildPrivacy(biz), encoding: 'utf-8' });
