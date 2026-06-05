@@ -31,7 +31,12 @@ assets/appsscript-Code.gs   # Apps Script nhận đơn COD vào Google Sheet
 SKILL.md                    # mô tả skill high-converting-lp-factory
 ```
 
-## Deploy LP lên Cloudflare
+## Deploy 1-chạm lên domain của bạn (GitHub + Vercel)
+Trong app, sau khi tạo LP, bấm **🚀 Connect & Deploy** → đăng nhập GitHub + Vercel (popup) →
+nhập domain → làm theo hướng dẫn DNS hiện ra. Source được đẩy vào repo GitHub của bạn,
+site chạy trên Vercel. Chủ tool cấu hình một lần theo `references/deploy-oauth-setup.md`.
+
+## Deploy LP lên Cloudflare (cách cũ, vẫn dùng được)
 Xem `references/deploy-and-tracking.md`. Tóm tắt: cài Node.js → `wrangler login` → giải nén DEPLOY KIT → bấm đúp `deploy.bat` (Windows) hoặc `./deploy.sh` (Mac/Linux).
 
 ## Lưu ý
