@@ -80,6 +80,10 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
     </div>
   </div>
   <div class="row">
+    <div><label>📊 Microsoft Clarity ID (heatmap — tuỳ chọn)</label><input id="clarity" placeholder="vd: abcdef1234"></div>
+    <div><label>📈 GA4 Measurement ID (conversion — tuỳ chọn)</label><input id="ga4" placeholder="vd: G-XXXXXXXXXX"></div>
+  </div>
+  <div class="row">
     <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
     <div><label>Thông điệp truyền thông chính</label><input id="msg" placeholder="VD: Tự tin từ bên trong — sạch thơm cả ngày"></div>
   </div>
@@ -158,7 +162,7 @@ const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',t
 
 // ---- STEP1 AI configs ----
 async function genConfigs(){
-  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),sheet:$('#sheet').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),sheet:$('#sheet').value.trim(),clarity:$('#clarity').value.trim(),ga4:$('#ga4').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
   if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
   if(!CFG.key){alert('Nhập API key');return;}
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
@@ -229,7 +233,9 @@ function renderLP(lp,srcOf){
   const vids=videoEmbeds(lp.videos);
   const vidsec=vids?`<section><span class="eyebrow">${L('sec_video','Review thật từ KOC')}</span><h2>${L('sec_video','Review thật từ KOC')}</h2><div class="vcaro">${vids}</div></section>`:'';
   const css=LPCSS.replace(/__ACC__/g,acc).replace(/__ACC2__/g,acc2);
-  return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><style>${css}</style></head><body><div class="wrap">
+  const clarityTag=C.clarity?`<script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",${JSON.stringify(C.clarity)});<\/script>`:'';
+  const ga4Tag=C.ga4?`<script async src="https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(C.ga4)}"><\/script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config',${JSON.stringify(C.ga4)});<\/script>`:'';
+  return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><style>${css}</style>${clarityTag}${ga4Tag}</head><body><div class="wrap">
 <div class="marq"><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span></div>
 <div class="nav"><div class="logo">${esc(C.brand)}</div><div class="mini">⭐ 5.0 · 400.000+</div></div>
 <section class="hero"><span class="eyebrow">${esc(a.ey||'')}</span><h1>${a.h1||''}</h1><p class="sub">${esc(a.sub||'')}</p><div style="margin:16px 0">${img('hero','4/5')}</div><div class="price"><span class="old">${esc(C.pold)}</span><span class="new">${esc(C.pnew)}</span></div><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY — COD'))} →</a><div class="chips"><span class="chiptrust">🏆 Top 1</span><span class="chiptrust">👥 400K+</span><span class="chiptrust">⭐ 5.0</span></div></section>
@@ -318,7 +324,7 @@ p{color:#d6dce6;font-size:15.5px}.mut{color:var(--mut)}.center{text-align:center
 
 const LPRUNTIME=`var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){cup(x.target);io.unobserve(x.target);}})},{threshold:.6});function cup(el){var t=+el.dataset.count,suf=el.dataset.suf||'',st=null;function step(ts){if(!st)st=ts;var p=Math.min((ts-st)/1400,1);var v=Math.floor(p*t);el.textContent=(v>=1000?v.toLocaleString():v)+suf;if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}document.querySelectorAll('[data-count]').forEach(function(el){io.observe(el)});
 (function(){var end=Date.now()+22*3600*1000;function t(){var d=Math.max(0,end-Date.now()),h=Math.floor(d/3.6e6),m=Math.floor(d%3.6e6/6e4),s=Math.floor(d%6e4/1e3);var H=document.getElementById('cd-h');if(!H)return;H.textContent=String(h).padStart(2,'0');document.getElementById('cd-m').textContent=String(m).padStart(2,'0');document.getElementById('cd-s').textContent=String(s).padStart(2,'0');}t();setInterval(t,1000);})();
-var cf=document.getElementById('codForm');if(cf)cf.addEventListener('submit',function(e){e.preventDefault();var f=e.target;var data={lp:LP_NAME,name:f.name.value,phone:f.phone.value,address:f.address.value,qty:f.qty.value,ts:new Date().toISOString()};try{fbq('track','Lead',{content_name:LP_NAME});}catch(x){}function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});`;
+var cf=document.getElementById('codForm');if(cf)cf.addEventListener('submit',function(e){e.preventDefault();var f=e.target;var data={lp:LP_NAME,name:f.name.value,phone:f.phone.value,address:f.address.value,qty:f.qty.value,ts:new Date().toISOString()};try{fbq('track','Lead',{content_name:LP_NAME});}catch(x){}try{if(window.gtag)gtag('event','generate_lead',{lp:LP_NAME});}catch(x){}function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});`;
 </script>
 <!-- ===== Deploy bridge: expose generated site files to the deploy module (classic script, sees CFG/LPS/renderLP/srcAsset) ===== -->
 <script>
