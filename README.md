@@ -42,6 +42,9 @@ SKILL.md                    # mô tả skill high-converting-lp-factory
   khi khách submit, server bắn conversion với `event_id` trùng pixel browser (**dedup**), hash
   SHA-256 SĐT/email. Giảm CPL, match rate cao. Token lưu trong tab `Config` của Sheet (Drive
   của bạn), `/api/lead` đọc qua Service Account — không lưu trên server tool.
+- **Sự kiện + giá trị chuyển đổi**: chọn loại sự kiện (mặc định **Purchase**) + mã tiền tệ (VND).
+  Khi điền form, cả pixel browser lẫn CAPI bắn `Purchase` kèm **value = giá KM × số lượng** +
+  `currency` (cùng `event_id` để dedup). TikTok → `CompletePayment`, GA4 → `purchase` (có value).
 - **Honeypot + lọc SĐT** ở `/api/lead` → chặn fake lead làm hỏng lookalike.
 - **Nghị định 13/2023**: mỗi bộ LP tự kèm `privacy.html` + `terms.html` (khai báo tracking +
   thông tin doanh nghiệp), LP có link footer. Điền Tên công ty / email / SĐT trong tool.

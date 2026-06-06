@@ -18,7 +18,7 @@ export function normalizePhone(phone) {
 }
 
 // Build a Meta Conversions API event (server-side), matching the browser Pixel via eventId.
-export function buildMetaEvent({ eventName = 'Lead', eventId, sourceUrl, phone, email, clientIp, userAgent, fbp, fbc, eventTime }) {
+export function buildMetaEvent({ eventName = 'Lead', eventId, sourceUrl, phone, email, clientIp, userAgent, fbp, fbc, eventTime, value, currency, contentName }) {
   const user_data = {};
   const ph = hashPII(normalizePhone(phone));
   if (ph) user_data.ph = [ph];
@@ -28,7 +28,7 @@ export function buildMetaEvent({ eventName = 'Lead', eventId, sourceUrl, phone, 
   if (userAgent) user_data.client_user_agent = userAgent;
   if (fbp) user_data.fbp = fbp;
   if (fbc) user_data.fbc = fbc;
-  return {
+  const evt = {
     event_name: eventName,
     event_time: eventTime || Math.floor(Date.now() / 1000),
     event_id: eventId,
@@ -36,6 +36,13 @@ export function buildMetaEvent({ eventName = 'Lead', eventId, sourceUrl, phone, 
     event_source_url: sourceUrl || undefined,
     user_data,
   };
+  const v = Number(value);
+  if (Number.isFinite(v) && v > 0) {
+    evt.custom_data = { value: v, currency: currency || 'VND', content_name: contentName || undefined };
+  } else if (contentName) {
+    evt.custom_data = { content_name: contentName };
+  }
+  return evt;
 }
 
 export async function sendMetaCAPI(pixelId, accessToken, event, fetchImpl = fetch) {
@@ -55,14 +62,14 @@ export async function sendMetaCAPI(pixelId, accessToken, event, fetchImpl = fetc
 }
 
 // Build a TikTok Events API 2.0 event, matching the browser pixel via event_id.
-export function buildTikTokEvent({ eventName = 'SubmitForm', eventId, sourceUrl, phone, email, clientIp, userAgent, ttp, eventTime }) {
+export function buildTikTokEvent({ eventName = 'SubmitForm', eventId, sourceUrl, phone, email, clientIp, userAgent, ttp, eventTime, value, currency, contentName }) {
   const user = {};
   const ph = hashPII(normalizePhone(phone));
   if (ph) user.phone = ph;
   const em = hashPII(email);
   if (em) user.email = em;
   if (ttp) user.ttp = ttp;
-  return {
+  const evt = {
     event: eventName,
     event_time: eventTime || Math.floor(Date.now() / 1000),
     event_id: eventId,
@@ -71,6 +78,12 @@ export function buildTikTokEvent({ eventName = 'SubmitForm', eventId, sourceUrl,
     ip: clientIp || undefined,
     user_agent: userAgent || undefined,
   };
+  const v = Number(value);
+  const props = {};
+  if (Number.isFinite(v) && v > 0) { props.value = v; props.currency = currency || 'VND'; }
+  if (contentName) props.content_name = contentName;
+  if (Object.keys(props).length) evt.properties = props;
+  return evt;
 }
 
 export async function sendTikTokEvents(pixelCode, accessToken, event, fetchImpl = fetch) {
