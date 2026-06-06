@@ -318,13 +318,14 @@ function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed
   ed.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:16px">✏️ Sửa LP: ${esc(a.slug)}</h2><button class="sec" onclick="document.getElementById('editor').style.display='none'">Đóng</button></div>
   <div class="ed-grid" style="margin-top:10px">
    <div>${tf('Eyebrow','ey')}${tf('H1 (có thể chứa &lt;span class=hl&gt;)','h1',60)}${tf('Sub','sub',60)}${tf('Tiêu đề giải pháp','stitle')}${tf('Mô tả giải pháp','slead',60)}${tf('Câu agitate (nỗi đau)','agitq',54)}${tf('Proof heading','proof')}${tf('CTA cuối - tiêu đề','ft')}${tf('CTA cuối - phụ đề','fs')}
-     <label>🎬 Link video KOC (YouTube/TikTok — mỗi dòng 1 link)</label><textarea oninput="LPS[${i}].videos=this.value" placeholder="https://www.tiktok.com/@.../video/123...\nhttps://youtu.be/...">${esc(lp.videos||'')}</textarea>
+     <label>🎬 Link video KOC (YouTube/TikTok — mỗi dòng 1 link)</label><textarea oninput="LPS[${i}].videos=this.value" placeholder="https://www.tiktok.com/@.../video/123...\nhttps://youtu.be/...">${esc(lp.videos||'')}</textarea><button type="button" class="sec" style="margin-top:6px;padding:7px 12px;font-size:12.5px" onclick="lpfApplyVideosAll(${i},this)">📋 Áp dụng video này cho TẤT CẢ ${LPS.length} LP</button>
    </div>
    <div><label>Hình ảnh từng section (sửa mô tả → Tạo lại)</label><div class="imgrow">${imgs}</div></div>
   </div>
   <div class="rowb" style="display:flex;gap:8px;margin-top:14px"><button onclick="preview(${i})" class="big sec" style="flex:1">👁 Preview</button><button onclick="downloadLP(${i})" class="big" style="flex:1">⬇️ Tải LP này</button></div>`;
   ed.scrollIntoView({behavior:'smooth'});
 }
+function lpfApplyVideosAll(i,btn){var v=(LPS[i]&&LPS[i].videos)||'';if(!v.trim()){alert('Nhập link video cho LP này trước đã.');return;}LPS.forEach(function(lp){lp.videos=v;});if(btn){var o=btn.textContent;btn.textContent='✓ Đã áp dụng cho '+LPS.length+' LP';btn.disabled=true;setTimeout(function(){btn.textContent=o;btn.disabled=false;},1800);}}
 async function regen(i,k,btn){btn.disabled=true;btn.textContent='...';try{const lp=LPS[i];lp.b64[k]=await genImage(lp.slots[k].prompt,lp.slots[k].ratio);const im=$('#im_'+i+'_'+k);if(im){im.src='data:image/jpeg;base64,'+lp.b64[k];im.style.display='';}const ph=$('#ph_'+i+'_'+k);if(ph)ph.style.display='none';const stx=$('#lpst'+i);if(stx)stx.textContent='ảnh '+Object.keys(lp.b64).filter(x=>lp.b64[x]).length+'/'+Object.keys(lp.slots).length;btn.textContent='✓';}catch(e){btn.textContent='lỗi';}setTimeout(()=>{btn.disabled=false;btn.textContent='Tạo lại ảnh';},1200);}
 
 // ---- download ----
