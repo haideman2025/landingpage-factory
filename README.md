@@ -52,13 +52,9 @@ Trong app, ô "Google Sheet endpoint" → bấm **🔗 Kết nối Google & tạ
 COD vào. Khách đặt hàng → đơn tự đổ vào Sheet. Chủ tool cài một lần theo
 `references/google-sheet-oauth-setup.md`. (Vẫn dán tay URL Apps Script được nếu thích.)
 
-## Deploy 1-chạm — lấy link chạy ads ngay (Vercel)
-Trong app, sau khi tạo LP, bấm **🚀 Deploy — lấy link ngay** → đăng nhập Vercel 1 lần (popup) →
-có link `*.vercel.app` chạy ads ngay. Nhập tên miền riêng (tùy chọn) → tool hiện bản ghi DNS
-để gắn. Chủ tool cấu hình một lần theo `references/deploy-oauth-setup.md` (chỉ cần Vercel
-Integration + 3 env var; GitHub là tùy chọn).
-
-## Deploy LP lên Cloudflare (cách cũ, vẫn dùng được)
+## Deploy LP lên Cloudflare / Vercel
+Bấm **⬇️ Tải DEPLOY KIT** → giải nén → deploy thư mục `site/` (vd: `npx vercel deploy site`
+hoặc `wrangler pages deploy site`). Xem `references/deploy-and-tracking.md`.
 Xem `references/deploy-and-tracking.md`. Tóm tắt: cài Node.js → `wrangler login` → giải nén DEPLOY KIT → bấm đúp `deploy.bat` (Windows) hoặc `./deploy.sh` (Mac/Linux).
 
 ## Lưu ý
