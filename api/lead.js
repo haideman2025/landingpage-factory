@@ -46,19 +46,22 @@ export default async function handler(req, res) {
 
       // Server-side conversions (best-effort; never block the response).
       const cfg = await getSheetConfig(saToken, sheetId).catch(() => ({}));
+      const fbEvent = p.ev || 'Lead';
+      const ttEvent = fbEvent === 'Purchase' ? 'CompletePayment' : (fbEvent === 'CompleteRegistration' ? 'CompleteRegistration' : 'SubmitForm');
       const ctx = {
         eventId: p.eid || undefined,
         sourceUrl: p.src || undefined,
         phone: p.phone, email: p.email,
         clientIp: clientIp(req), userAgent: req.headers && req.headers['user-agent'],
         fbp: p.fbp, fbc: p.fbc, ttp: p.ttp,
+        value: p.value, currency: p.currency || 'VND', contentName: p.lp,
       };
       const jobs = [];
       if (cfg.meta_pixel && cfg.meta_token) {
-        jobs.push(sendMetaCAPI(cfg.meta_pixel, cfg.meta_token, buildMetaEvent(ctx)).catch(() => {}));
+        jobs.push(sendMetaCAPI(cfg.meta_pixel, cfg.meta_token, buildMetaEvent({ ...ctx, eventName: fbEvent })).catch(() => {}));
       }
       if (cfg.tiktok_pixel && cfg.tiktok_token) {
-        jobs.push(sendTikTokEvents(cfg.tiktok_pixel, cfg.tiktok_token, buildTikTokEvent(ctx)).catch(() => {}));
+        jobs.push(sendTikTokEvents(cfg.tiktok_pixel, cfg.tiktok_token, buildTikTokEvent({ ...ctx, eventName: ttEvent })).catch(() => {}));
       }
       await Promise.all(jobs);
     }

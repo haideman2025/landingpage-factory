@@ -28,6 +28,21 @@ test('buildMetaEvent hashes phone/email and carries dedup event_id', () => {
   assert.equal(ev.user_data.client_ip_address, '1.2.3.4');
 });
 
+test('buildMetaEvent adds Purchase custom_data with value + currency', () => {
+  const ev = buildMetaEvent({ eventName: 'Purchase', eventId: 'E', phone: '0901234567', value: 780000, currency: 'VND', contentName: 'LP1' });
+  assert.equal(ev.event_name, 'Purchase');
+  assert.equal(ev.custom_data.value, 780000);
+  assert.equal(ev.custom_data.currency, 'VND');
+  assert.equal(ev.custom_data.content_name, 'LP1');
+});
+
+test('buildTikTokEvent adds value properties when present', () => {
+  const ev = buildTikTokEvent({ eventName: 'CompletePayment', eventId: 'E', value: 390000, currency: 'VND' });
+  assert.equal(ev.event, 'CompletePayment');
+  assert.equal(ev.properties.value, 390000);
+  assert.equal(ev.properties.currency, 'VND');
+});
+
 test('sendMetaCAPI posts to graph v22 with the pixel + token', async () => {
   const fx = installFetch([{ body: { events_received: 1 } }]);
   await sendMetaCAPI('PIX1', 'TOK1', { event_name: 'Lead' });
