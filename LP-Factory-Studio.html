@@ -77,7 +77,20 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   </div>
   <div class="row">
     <div><label>Meta Pixel ID</label><input id="pixel" value="2171460696601031"></div>
-    <div><label>Google Sheet endpoint (tuỳ chọn)</label><input id="sheet" placeholder="https://script.google.com/.../exec"></div>
+    <div><label>TikTok Pixel ID (tuỳ chọn)</label><input id="ttpixel" placeholder="VD: CxxxxxXXXXXXXX"></div>
+  </div>
+  <div class="row">
+    <div><label>Webhook / Sheet endpoint (CAPI hoặc Apps Script /exec)</label><input id="sheet" placeholder="https://... (n8n webhook = full CAPI, Apps Script = chỉ lưu Sheet)"></div>
+  </div>
+  <label style="margin-top:6px">🏢 Thông tin doanh nghiệp — cho footer + 3 trang chính sách Nghị định 13 (Meta/TikTok duyệt ads)</label>
+  <div class="row">
+    <div><label>Tên pháp lý / công ty</label><input id="company" placeholder="VD: Công ty TNHH ONIIZ Việt Nam"></div>
+    <div><label>Email</label><input id="cemail" placeholder="cskh@oniiz.vn"></div>
+  </div>
+  <div class="row">
+    <div><label>Hotline</label><input id="hotline" placeholder="0900 000 000"></div>
+    <div><label>Địa chỉ</label><input id="address" placeholder="Số nhà, đường, quận, TP"></div>
+    <div><label>MST / GPKD</label><input id="mst" placeholder="0xxxxxxxxx"></div>
   </div>
   <div class="row">
     <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
@@ -155,7 +168,13 @@ async function parsePack(file){if(!file)return;var stt=$('#packStatus');stt.text
    else if(k.indexOf('tiết kiệm')>-1)$('#psave').value=v;
    else if(k.indexOf('đơn vị tiền')>-1)$('#curr').value=v;
    else if(k.indexOf('số ảnh')>-1){var n=parseInt(v);if(n)$('#conc').value=n;}
+   else if(k.indexOf('tiktok')>-1||(k.indexOf('tt')>-1&&k.indexOf('pixel')>-1))$('#ttpixel').value=v;
    else if(k.indexOf('pixel')>-1)$('#pixel').value=v;
+   else if(k.indexOf('công ty')>-1||k.indexOf('pháp lý')>-1)$('#company').value=v;
+   else if(k.indexOf('email')>-1)$('#cemail').value=v;
+   else if(k.indexOf('hotline')>-1)$('#hotline').value=v;
+   else if(k.indexOf('địa chỉ')>-1)$('#address').value=v;
+   else if(k.indexOf('mst')>-1||k.indexOf('gpkd')>-1)$('#mst').value=v;
    else if(k.indexOf('mục tiêu')>-1)packSel('goal',v.toLowerCase().slice(0,6));
    else if(k.indexOf('brand guideline')>-1||k.indexOf('tone')>-1)$('#guide').value=v;
    else if(k.indexOf('visual dna')>-1)$('#dna').value=v;
@@ -180,7 +199,7 @@ const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',t
 
 // ---- STEP1 AI configs ----
 async function genConfigs(){
-  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),sheet:$('#sheet').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
   if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
   if(!CFG.key){alert('Nhập API key');return;}
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
@@ -239,8 +258,9 @@ function videoEmbeds(links){const arr=(links||'').split(/[\n,]+/).map(s=>s.trim(
 
 // ---- render LP (srcOf: key -> img src) ----
 function L(k,fb){return (UI[k]&&String(UI[k]).trim())||fb;}
+function curISO(x){x=(x||'').toLowerCase();if(/đ|vnd|₫/.test(x))return'VND';if(/\$|usd/.test(x))return'USD';if(/฿|thb|baht/.test(x))return'THB';if(/rp|idr/.test(x))return'IDR';if(/rm|myr/.test(x))return'MYR';if(/₱|php|peso/.test(x))return'PHP';if(/¥|cny|rmb|元/.test(x))return'CNY';return'VND';}
 function renderLP(lp,srcOf){
-  const a=lp.a,C=CFG,acc=a.acc||'#19c3c9',acc2=a.acc2||'#ff7a4e';
+  const a=lp.a,C=CFG,acc=a.acc||'#19c3c9',acc2=a.acc2||'#ff7a4e',CUR=curISO(C.curr);
   const S=(k,r)=>srcOf(k)||'';
   const scene=(k,r,eb,head,sub,al)=>{const s=S(k,r);const bg=s?`<img src="${s}" alt="${esc(slug(k))}" loading="eager">`:`<div class="noimg">ảnh ${k}</div>`;return `<section class="scene reveal">${bg}<div class="scrim"></div><div class="cap ${al||'center'}">${eb?`<span class="eb">${eb}</span>`:''}<h2>${head}</h2>${sub?`<p>${sub}</p>`:''}</div></section>`;};
   const heroScene=()=>{const s=S('hero','4/5');const bg=s?`<img src="${s}" alt="hero" loading="eager">`:`<div class="noimg">hero</div>`;return `<section class="scene hero reveal">${bg}<div class="scrim"></div><div class="cap bottom">${a.ey?`<span class="eb">${esc(a.ey)}</span>`:''}<h1>${a.h1||''}</h1><p>${esc(a.sub||'')}</p><div class="price"><s>${esc(C.pold)}</s><b>${esc(C.pnew)}</b></div><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY — COD'))} →</a><div class="chips"><span>🏆 Top 1</span><span>👥 400K+</span><span>⭐ 5.0</span></div></div></section>`;};
@@ -274,10 +294,11 @@ ${scene('after','1/1',esc(L('sec_story','Câu chuyện thật')), esc(cs.n||'')+
 <section class="band"><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
 ${scene('hero','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
 <section class="band center"><a href="#order" class="btn" style="max-width:420px">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
-<div class="foot"><b>${esc(C.brand)}</b><br><span class="mut">📞 Hotline · ✉️ email · Địa chỉ · MST</span><br><span class="mut">Chính sách bảo mật · Điều khoản · © 2026 ${esc(C.brand)}</span></div>
+<div class="foot"><b>${esc(C.company||C.brand)}</b><br><span class="mut">${[C.hotline?('📞 '+esc(C.hotline)):'',C.cemail?('✉️ '+esc(C.cemail)):'',C.address?('📍 '+esc(C.address)):'',C.mst?('MST: '+esc(C.mst)):''].filter(Boolean).join(' · ')||'📞 Hotline · ✉️ email · Địa chỉ · MST'}</span><br><span class="mut" style="--lk:#8aa0c0"><a href="./chinh-sach-bao-mat.html" style="color:#8aa0c0;text-decoration:underline">Chính sách bảo mật</a> · <a href="./dieu-khoan-su-dung.html" style="color:#8aa0c0;text-decoration:underline">Điều khoản sử dụng</a> · <a href="./chinh-sach-thanh-toan.html" style="color:#8aa0c0;text-decoration:underline">Chính sách thanh toán</a></span><br><span class="mut">© 2026 ${esc(C.brand)}</span></div>
 <div class="sticky"><div class="p"><b>${esc(C.pnew)}</b> <s>${esc(C.pold)}</s></div><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY'))} →</a></div>
-<script>var SHEET_ENDPOINT=${JSON.stringify(C.sheet||'')};var LP_NAME=${JSON.stringify((a.h1||'').replace(/<[^>]+>/g,''))};var UNIT_PRICE=${JSON.stringify(parseInt((C.pnew||'').replace(/[^0-9]/g,''))||0)};<\/script>
-<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',${JSON.stringify(C.pixel)});fbq('track','PageView');fbq('track','ViewContent',{content_type:'product',currency:${JSON.stringify(C.curr||'VND')}});<\/script>
+<script>var SHEET_ENDPOINT=${JSON.stringify(C.sheet||'')};var LP_NAME=${JSON.stringify((a.h1||'').replace(/<[^>]+>/g,''))};var LP_ID=${JSON.stringify(slug(a.slug||(a.h1||'').replace(/<[^>]+>/g,'')||'lp'))};var UNIT_PRICE=${JSON.stringify(parseInt((C.pnew||'').replace(/[^0-9]/g,''))||0)};var CURRENCY=${JSON.stringify(CUR)};<\/script>
+${C.pixel?`<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',${JSON.stringify(C.pixel)});fbq('track','PageView');fbq('track','ViewContent',{content_type:'product',currency:'${CUR}'});<\/script>`:''}
+${C.ttpixel?`<script>!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};var s=d.createElement("script");s.type="text/javascript";s.async=!0;s.src=r+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(s,a)};ttq.load('${C.ttpixel}');ttq.page();}(window,document,'ttq');<\/script>`:''}
 <script>${LPRUNTIME}<\/script></body></html>`;
 }
 function srcData(lp){return k=>lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):null;}
@@ -303,8 +324,21 @@ function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed
 async function regen(i,k,btn){btn.disabled=true;btn.textContent='...';try{const lp=LPS[i];lp.b64[k]=await genImage(lp.slots[k].prompt,lp.slots[k].ratio);const im=$('#im_'+i+'_'+k);if(im)im.src='data:image/jpeg;base64,'+lp.b64[k];btn.textContent='✓';}catch(e){btn.textContent='lỗi';}setTimeout(()=>{btn.disabled=false;btn.textContent='Tạo lại ảnh';},1200);}
 
 // ---- download ----
-async function downloadLP(i){const lp=LPS[i];const zip=new JSZip();zip.file('index.html',renderLP(lp,srcAsset(lp)));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
-async function downloadAll(){const zip=new JSZip();const site=zip.folder('site');LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});});var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
+function policyPages(C){
+  var name=C.company||C.brand||'Doanh nghiệp',email=C.cemail||'contact@example.com',phone=C.hotline||'',addr=C.address||'',mst=C.mst||'';
+  var third=['Cloudflare (CDN/IP trace)','ipify (IP fallback)'];
+  if(C.pixel)third.push('Meta Platforms (Pixel + Conversions API)');
+  if(C.ttpixel)third.push('TikTok (Pixel + Events API)');
+  third.push('VietQR / cổng thanh toán (nếu áp dụng)');
+  var foot='<hr><p style="font-size:13px;color:#666">'+esc(name)+(addr?' · '+esc(addr):'')+(email?' · '+esc(email):'')+(phone?' · '+esc(phone):'')+(mst?' · MST: '+esc(mst):'')+'</p>';
+  function W(t,b){return '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(t)+' | '+esc(C.brand||name)+'</title><style>body{font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Arial;max-width:760px;margin:0 auto;padding:24px;line-height:1.6;color:#222}h1{font-size:22px}h2{font-size:16px;margin-top:20px}a{color:#0061ff}</style></head><body>'+b+foot+'<p style="margin-top:18px"><a href="./index.html">← Về trang chính</a></p></body></html>';}
+  var bm='<h1>Chính sách bảo mật</h1><p>'+esc(name)+' cam kết bảo vệ dữ liệu cá nhân của bạn theo Nghị định 13/2023/NĐ-CP.</p><h2>1. Dữ liệu thu thập</h2><p>Họ tên, số điện thoại, địa chỉ giao hàng, và dữ liệu kỹ thuật (IP, user-agent, cookie quảng cáo fbp/fbc/ttclid) để đo lường hiệu quả quảng cáo.</p><h2>2. Mục đích</h2><p>Xử lý đơn hàng, chăm sóc khách hàng, và tối ưu quảng cáo.</p><h2>3. Bên thứ ba nhận dữ liệu</h2><ul>'+third.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul><h2>4. Quyền của bạn</h2><p>Bạn có quyền truy cập, chỉnh sửa, xoá dữ liệu cá nhân bằng cách liên hệ '+esc(email)+(phone?' hoặc '+esc(phone):'')+'.</p><h2>5. Lưu trữ &amp; bảo mật</h2><p>Dữ liệu được mã hoá khi truyền, lưu trên dịch vụ có bảo mật, chỉ nhân sự được uỷ quyền truy cập.</p>';
+  var dk='<h1>Điều khoản sử dụng</h1><h2>1. Chấp nhận điều khoản</h2><p>Khi sử dụng website/landing page này, bạn đồng ý với các điều khoản dưới đây.</p><h2>2. Đặt hàng</h2><p>Đơn hàng được xác nhận qua điện thoại/tin nhắn. Giá và ưu đãi có thể thay đổi theo từng thời điểm.</p><h2>3. Giao hàng &amp; COD</h2><p>Giao hàng toàn quốc, khách kiểm tra hàng trước khi thanh toán (COD).</p><h2>4. Đổi trả</h2><p>Hỗ trợ đổi trả với sản phẩm lỗi/không đúng mô tả trong thời hạn quy định.</p><h2>5. Liên hệ</h2><p>'+esc(email)+(phone?' · '+esc(phone):'')+'</p>';
+  var tt='<h1>Chính sách thanh toán</h1><p>Chúng tôi hỗ trợ COD (thanh toán khi nhận hàng) và chuyển khoản VietQR. Thông tin chuyển khoản hiển thị khi đặt hàng; vui lòng ghi đúng nội dung để hệ thống xác nhận tự động.</p><h2>Hoàn tiền</h2><p>Hoàn tiền với đơn lỗi hoặc không giao được, theo chính sách đổi trả.</p>';
+  return {'chinh-sach-bao-mat.html':W('Chính sách bảo mật',bm),'dieu-khoan-su-dung.html':W('Điều khoản sử dụng',dk),'chinh-sach-thanh-toan.html':W('Chính sách thanh toán',tt)};
+}
+async function downloadLP(i){const lp=LPS[i];const zip=new JSZip();zip.file('index.html',renderLP(lp,srcAsset(lp)));const pp=policyPages(CFG);Object.keys(pp).forEach(fn=>zip.file(fn,pp[fn]));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
+async function downloadAll(){const zip=new JSZip();const site=zip.folder('site');var pp=policyPages(CFG);LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));Object.keys(pp).forEach(fn=>f.file(fn,pp[fn]));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});});var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
 zip.file('deploy.ps1',['param([string]$Project="'+proj+'")','$ErrorActionPreference="Stop"','if(-not (Get-Command wrangler -ErrorAction SilentlyContinue)){ Write-Host "Cai wrangler..."; npm i -g wrangler }','Write-Host "Neu chua login: chay  wrangler login"','wrangler pages project create $Project --production-branch=main 2>$null','wrangler pages deploy "$PSScriptRoot\\site" --project-name=$Project','Write-Host "XONG -> https://$Project.pages.dev/<ten-lp>/"'].join('\r\n'));
 zip.file('deploy.bat',['@echo off','powershell -ExecutionPolicy Bypass -File "%~dp0deploy.ps1"','pause'].join('\r\n'));
 zip.file('deploy.sh',['#!/usr/bin/env bash','set -e','PROJECT="${1:-'+proj+'}"','command -v wrangler >/dev/null || npm i -g wrangler','wrangler pages project create "$PROJECT" --production-branch=main 2>/dev/null || true','wrangler pages deploy "$(cd "$(dirname "$0")" && pwd)/site" --project-name="$PROJECT"','echo "XONG -> https://$PROJECT.pages.dev/"'].join('\n'));
@@ -375,12 +409,15 @@ document.querySelectorAll('[data-count]').forEach(function(el){io.observe(el)});
 document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
 setTimeout(function(){document.querySelectorAll('.reveal:not(.in)').forEach(function(s){if(s.getBoundingClientRect().top<innerHeight)s.classList.add('in')})},80);
 (function(){var end=Date.now()+22*3600*1000;function t(){var d=Math.max(0,end-Date.now()),h=Math.floor(d/3.6e6),m=Math.floor(d%3.6e6/6e4),s=Math.floor(d%6e4/1e3);var H=document.getElementById('cd-h');if(!H)return;H.textContent=String(h).padStart(2,'0');document.getElementById('cd-m').textContent=String(m).padStart(2,'0');document.getElementById('cd-s').textContent=String(s).padStart(2,'0');}t();setInterval(t,1000);})();
-function ck(n){var m=document.cookie.match('(^|;)\s*'+n+'\s*=\s*([^;]+)');return m?m.pop():''}
-function utm(k){try{return new URLSearchParams(location.search).get(k)||''}catch(e){return ''}}
-var cf=document.getElementById('codForm');if(cf)cf.addEventListener('submit',function(e){e.preventDefault();var f=e.target;var eid='lead-'+Date.now()+'-'+Math.random().toString(16).slice(2,8);var q=parseInt(f.qty.value)||1;var val=(typeof UNIT_PRICE!=='undefined'?UNIT_PRICE:0)*q;
-try{fbq('track','Lead',{value:val,currency:'VND',content_name:LP_NAME},{eventID:eid});fbq('track','Purchase',{value:val,currency:'VND',content_name:LP_NAME},{eventID:'p_'+eid});}catch(x){}
-var data={lp:LP_NAME,lp_id:LP_NAME,name:f.name.value,phone:f.phone.value,address:f.address.value,qty:f.qty.value,value:val,currency:'VND',eid:eid,fbp:ck('_fbp'),fbc:ck('_fbc'),ua:navigator.userAgent,ts:new Date().toISOString(),src:location.href,utm_source:utm('utm_source'),utm_medium:utm('utm_medium'),utm_campaign:utm('utm_campaign')};
+function ck(n){var v=('; '+document.cookie).split('; '+n+'=');return v.length===2?v.pop().split(';').shift():''}
+function gp(k){try{return new URLSearchParams(location.search).get(k)||''}catch(e){return ''}}
+var _LP={lp_id:(typeof LP_ID!=='undefined'?LP_ID:''),utm_source:gp('utm_source'),utm_medium:gp('utm_medium'),utm_campaign:gp('utm_campaign'),utm_content:gp('utm_content'),utm_term:gp('utm_term'),fbclid:gp('fbclid'),ttclid:gp('ttclid'),fbp:ck('_fbp'),fbc:ck('_fbc')||(gp('fbclid')?('fb.1.'+Date.now()+'.'+gp('fbclid')):''),ttp:ck('_ttp'),referrer:document.referrer||'',url:location.href,ua:navigator.userAgent,ip:''};
+fetch('https://www.cloudflare.com/cdn-cgi/trace').then(function(r){return r.text();}).then(function(t){var m=t.match(/ip=(.*)/);if(m)_LP.ip=m[1].trim();}).catch(function(){fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(j){_LP.ip=j.ip;}).catch(function(){});});
+var cf=document.getElementById('codForm');if(cf)cf.addEventListener('submit',function(e){e.preventDefault();var f=e.target;var eid='lead-'+Date.now()+'-'+Math.random().toString(16).slice(2,10);var q=parseInt(f.qty.value)||1;var val=(typeof UNIT_PRICE!=='undefined'?UNIT_PRICE:0)*q;var CUR=(typeof CURRENCY!=='undefined'?CURRENCY:'VND');
+try{if(window.fbq){fbq('track','Lead',{value:val,currency:CUR,content_name:LP_NAME},{eventID:eid});fbq('track','Purchase',{value:val,currency:CUR,content_name:LP_NAME},{eventID:'p_'+eid});}}catch(x){}
+try{if(window.ttq){ttq.track('SubmitForm',{content_name:LP_NAME},{event_id:eid});ttq.track('CompletePayment',{value:val,currency:CUR,content_name:LP_NAME,quantity:q},{event_id:'p_'+eid});}}catch(x){}
+var data=Object.assign({},_LP,{event_id:eid,event_name:'Lead',event_time:Math.floor(Date.now()/1000),ts:new Date().toISOString(),name:f.name.value,phone:f.phone.value,address:f.address.value,qty:String(q),value:val,currency:CUR,lp:LP_NAME});
 function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}
-if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});`;
+if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(done).catch(done);}else{done();}return false;});`;
 </script>
 </body></html>
