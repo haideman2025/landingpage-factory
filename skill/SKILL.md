@@ -152,3 +152,11 @@ Thêm **section USP mạnh nhất** + **scent-story tương tác** cho `LP-Facto
 3. **Video review bấm xem dễ**: KOC carousel đổi từ iframe nhúng nhỏ → **card có thumbnail + nút ▶** (YouTube lấy thumbnail thật); bấm mở **lightbox player lớn** (YT 16/9, TikTok 9/16). Lightbox dùng chung cho ảnh + video; đóng bằng nút/Esc/click nền, dừng video khi đóng.
 4. **Logo header gọn**: chỉ hiển thị phần thương hiệu chính (cắt trước dấu " - " / "|" / "•"…), font nhỏ + ellipsis + max-width 42%, nav co giãn (flex) → không chiếm quá nhiều chỗ.
 - Verify: node --check + test 10 case (card video, hashtag distribute, lightbox, logo) + regression toàn bộ (xanh).
+
+## CẬP NHẬT v13 (tái thiết kế layout: full-bleed storytelling + mobile-only) ✅
+Theo yêu cầu "toàn bộ hình ảnh là background, kể chuyện liền mạch, chỉ hiển thị mobile trên cả điện thoại lẫn desktop":
+- **Khung mobile-only**: bọc toàn bộ nội dung trong cột `.lpapp` (max-width 480px, căn giữa, nền `#06070a` bao quanh, box-shadow như khung điện thoại); sticky CTA constrain trong cột (left:50%+translateX) và **bỏ ẩn-trên-desktop** → desktop xem y như mobile. Không đặt overflow:hidden để giữ sticky header.
+- **Mọi ảnh thành full-bleed scene** (object-fit cover + scrim + text overlay), tỉ lệ portrait 4/5 đồng bộ: USP-band → full-bleed scene; **3 hương → 3 scene full-bleed bấm mở câu chuyện** (`.scent-scene` + `.scent-cta`, thay strip thumbnail); **Before/After → 2 scene full-bleed xếp dọc** (thay split 2 thumbnail). ~11 scene full-bleed nối tiếp liền mạch.
+- Sửa tái dùng ảnh để không lặp 3 lần: story dùng `closing`, màn kết dùng lại `hero` (bookend), `after` chỉ ở Before/After.
+- Giữ nguyên: tracking/CAPI, form COD, policy ND13, modal câu chuyện hương, lightbox UGC/video, APIFY hashtag, các band chức năng (pains/benefits/stats/offer/form/faq — không có ảnh nên giữ dạng text band trong cột).
+- Verify: node --check + render structure test (cột lpapp, USP full-bleed, 3 scent scene tappable, before/after scene, hero bookend, sticky, modal/lightbox intact, tracking) + regression (xanh).
