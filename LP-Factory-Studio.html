@@ -93,6 +93,10 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
     <div><label>MST / GPKD</label><input id="mst" placeholder="0xxxxxxxxx"></div>
   </div>
   <div class="row">
+    <div><label>🎬 Link video sản phẩm (YouTube) — nhúng 16/9 vào trang</label><input id="pvideo" placeholder="https://youtu.be/... (để trống = không có video sản phẩm)"></div>
+    <div><label>🤖 APIFY API token (tuỳ chọn — để cào video TikTok)</label><input id="apify" type="password" placeholder="apify_api_..."></div>
+  </div>
+  <div class="row">
     <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
     <div><label>Thông điệp truyền thông chính</label><input id="msg" placeholder="VD: Tự tin từ bên trong — sạch thơm cả ngày"></div>
   </div>
@@ -120,12 +124,18 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   <div id="refPrev" style="margin-top:8px"></div>
   <button class="sec" onclick="extractPalette()" style="margin-top:8px;padding:8px 12px;font-size:13px">🎨 Trích bảng màu thương hiệu từ ảnh brand → Brand DNA</button>
   <div id="swatches" style="margin-top:8px"></div>
+  <label style="margin-top:10px">📸 Ảnh UGC khách hàng (tối đa 10) — hiển thị dạng carousel mượt trên LP</label>
+  <div class="drop" id="dropUgc">＋ ảnh UGC thật (review / khách dùng) — kéo thả hoặc bấm chọn nhiều ảnh</div>
+  <input type="file" id="fileUgc" accept="image/*" multiple hidden>
+  <div id="ugcPrev" style="margin-top:6px"></div>
   <div class="row" style="margin-top:8px"><div><label>Số ảnh song song (Tier 3 → 8–12)</label><input type="number" id="conc" value="8" min="1" max="24" style="max-width:120px"></div></div>
   <button class="big" id="genImg" onclick="buildAll()" disabled style="margin-top:6px">⚡ Tạo ảnh + Build toàn bộ Landing Page</button>
   <div class="bar"><i id="prog2"></i></div><div id="st2" class="muted"></div>
 </div>
 
 <div class="card"><h2><span class="step">3</span> Sửa & Preview & Tải</h2>
+  <button class="big sec" id="scrapeTt" onclick="scrapeTikTok()" disabled style="margin-bottom:8px">🤖 Cào video TikTok theo insight từng LP (APIFY) → chèn 5–10 video/LP</button>
+  <div id="scrapeStatus" class="muted" style="margin:-2px 0 10px"></div>
   <button class="big sec" id="dlAll" onclick="downloadAll()" disabled>⬇️ Tải DEPLOY KIT (10 LP + script deploy Cloudflare 1-click)</button>
   <div class="lpgrid" id="lpgrid"></div>
   <div class="editor" id="editor"></div>
@@ -136,7 +146,7 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
 
 <script>
 const $=s=>document.querySelector(s);
-let CFG=null, ANGLES=[], UI={}, REF=[], LPS=[], curEdit=-1;
+let CFG=null, ANGLES=[], UI={}, REF=[], LPS=[], curEdit=-1, UGC=[], ASSETMODE=false;
 try{const k=localStorage.getItem('lpf_key');if(k){$('#key').value=k;$('#remember').checked=true;}}catch(e){}
 $('#remember').addEventListener('change',e=>{try{e.target.checked?localStorage.setItem('lpf_key',$('#key').value):localStorage.removeItem('lpf_key');}catch(_){}});
 function slug(s){return (s||'img').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'x';}
@@ -175,6 +185,9 @@ function extractPalette(){
   img.onerror=function(){alert('Không tải được ảnh.');};
   img.src=ref.url;
 }
+function renderUgc(){var p=$('#ugcPrev');if(!p)return;p.innerHTML=UGC.map(function(u,i){return '<span style="display:inline-block;position:relative;margin:0 6px 6px 0"><img src="'+u.url+'" style="height:54px;width:54px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"><span style="position:absolute;top:-6px;right:-6px;background:var(--bad);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;text-align:center;cursor:pointer;line-height:18px" onclick="UGC.splice('+i+',1);renderUgc()">✕</span></span>';}).join('')+(UGC.length?'<div style="font-size:11px;color:var(--mut);margin-top:2px">'+UGC.length+'/10 ảnh UGC</div>':'');}
+(function(){var d=$('#dropUgc'),i=$('#fileUgc');if(!d)return;function add(fs){var arr=[].slice.call(fs),room=Math.max(0,10-UGC.length);arr.slice(0,room).forEach(function(f){var r=new FileReader();r.onload=function(){var obj={url:r.result,b64:null};UGC.push(obj);renderUgc();toJpeg(r.result).then(function(b){obj.b64=b;}).catch(function(){});};r.readAsDataURL(f);});}
+ d.onclick=function(){i.click();};['dragover','dragenter'].forEach(function(e){d.addEventListener(e,function(ev){ev.preventDefault();d.style.borderColor='var(--acc)';});});['dragleave','drop'].forEach(function(e){d.addEventListener(e,function(ev){ev.preventDefault();d.style.borderColor='var(--line)';});});d.addEventListener('drop',function(ev){ev.preventDefault();add(ev.dataTransfer.files);});i.addEventListener('change',function(){add(i.files);});})();
 try{if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}catch(e){}
 (function(){var d=$('#dropGuide'),i=$('#fileGuide');if(!d)return;d.onclick=()=>i.click();['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--acc)'}));['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--line)'}));d.addEventListener('drop',ev=>parseGuide(ev.dataTransfer.files[0]));i.addEventListener('change',()=>parseGuide(i.files[0]));})();
 async function parseGuide(file){if(!file)return;const stt=$('#guideStatus');stt.textContent='Đang trích: '+file.name+'...';const ext=(file.name.split('.').pop()||'').toLowerCase();let txt='';try{
@@ -222,22 +235,22 @@ async function parsePack(file){if(!file)return;var stt=$('#packStatus');stt.text
 async function listModels(){const k=$('#key').value.trim();if(!k){alert('Nhập API key trước');return;}try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(k));const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||'HTTP '+r.status);const ms=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>m.name.replace('models/',''));const dt=$('#models_t'),di=$('#models_i');dt.innerHTML='';di.innerHTML='';ms.forEach(n=>{const o=document.createElement('option');o.value=n;dt.appendChild(o);if(/image/i.test(n)){const o2=document.createElement('option');o2.value=n;di.appendChild(o2);}});alert('Tìm thấy '+ms.length+' model. Bấm vào ô model để chọn (gợi ý text: bản pro mới nhất; ảnh: bản có "image").');}catch(e){alert('Lỗi liệt kê model: '+e.message);}}
 
 // ---- prompt composer ----
-function BRANDDNA(){return CFG.dna||("BRAND VISUAL DNA: "+CFG.brand+" — premium cinematic photoreal, consistent grade/lighting across all images.");}
+function BRANDDNA(){return CFG.dna||("BRAND VISUAL DNA: "+CFG.brand+" — natural true-to-life photography, realistic everyday lighting and consistent authentic color grade across all images (not glossy/over-stylized).");}
 function AUDIENCE(){return CFG.audienceVisual?("TARGET AUDIENCE shown in image: "+CFG.audienceVisual+". Reflect the campaign goal/message: "+(CFG.goal||"")+(CFG.msg?(" — "+CFG.msg):"")+". "):"";}
 function PRODREF(){return "Use the attached reference image(s): keep the exact product packaging/label/logo; follow the brand visual identity.";}
-function P(scene,ratio,withprod){return scene+". Cinematic photoreal STORYTELLING image, emotionally evocative, authentic candid human emotion that makes the viewer FEEL the moment (not a product-catalog shot), film-still aesthetic, advertising quality, realistic texture, beautiful depth of field. Aspect ratio "+ratio+", vertical for mobile landing page, leave clean negative space for text overlay. "+(withprod?(PRODREF()+" "):"Do NOT show any product/bottle/packaging/logo — pure emotional lifestyle storytelling. ")+BRANDDNA()+" "+AUDIENCE()+"Negative: no on-image text, no watermark, no distorted hands, no other brand logos, no NSFW.";}
+function P(scene,ratio,withprod){return scene+". Authentic real-life photo that looks like a genuine candid moment captured on a modern smartphone by an ordinary person — natural everyday setting, natural available daylight, true-to-life skin tones and textures, unposed and slightly imperfect, relatable real people (NOT professional models), documentary/UGC realism, believable everyday environment with normal real-world details. Aspect ratio "+ratio+", vertical for mobile landing page, leave clean negative space for text overlay. "+(withprod?(PRODREF()+" "):"Do NOT show any product/bottle/packaging/logo — a pure real-life lifestyle moment. ")+BRANDDNA()+" "+AUDIENCE()+"Negative: no glossy studio or commercial gloss, no overproduced advertising look, no fashion-model perfection, no fake plastic skin, no heavy retouching, no on-image text, no watermark, no distorted hands, no other brand logos, no NSFW.";}
 
-const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',true],['scent1','4/5',true],['scent2','4/5',true],['scent3','4/5',true],['before','1/1',false],['after','1/1',true],['video','16/9',false],['ugc1','1/1',true],['ugc2','1/1',true],['ugc3','1/1',true],['ugc4','1/1',true],['ugc5','1/1',true],['ugc6','1/1',true]];
+const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',true],['scent1','4/5',true],['scent2','4/5',true],['scent3','4/5',true],['before','1/1',false],['after','1/1',true]];
 
 // ---- STEP1 AI configs ----
 async function genConfigs(){
-  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),skin:($('#skin')&&$('#skin').value)||'default',n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),skin:($('#skin')&&$('#skin').value)||'default',pvideo:($('#pvideo')&&$('#pvideo').value.trim())||'',apify:($('#apify')&&$('#apify').value.trim())||'',n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
   if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
   if(!CFG.key){alert('Nhập API key');return;}
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
   const sys=`You are a senior DTC direct-response strategist + art director. Create ${CFG.n} DISTINCT high-converting landing-page angles, each a different insight/pain. ALL customer-facing copy MUST be written in ${CFG.lang} with correct spelling/diacritics/script. Analyze ALL inputs (language/market, brand, product, brand guideline, CAMPAIGN GOAL, KEY MESSAGE and TARGET AUDIENCE) and design copy AND image scenes that fit the campaign goal and resonate with the target audience. Return ONLY valid JSON:
 {"dna":"<Brand Visual DNA in ENGLISH>","audience_visual":"<short ENGLISH casting note: who appears in the images — age range, gender, look/ethnicity if relevant, setting, lifestyle, emotional vibe — matching the TARGET AUDIENCE and CAMPAIGN GOAL>","ui":{"cta":"","order_h":"","form_name":"","form_phone":"","form_address":"","form_qty":"","form_btn":"","thanks_h":"","thanks_p":"","sec_solution":"","sec_choose":"","sec_reasons":"","sec_story":"","sec_proof_fallback":"","sec_video":"","before":"","after":"","urgency_h":"","guarantee":"","marquee":"","reasons":["r1","r2","r3","r4"],"faqs":[{"q":"","a":""},{"q":"","a":""},{"q":"","a":""},{"q":"","a":""}]},"angles":[{...}]}
-ui = localized UI labels in ${CFG.lang}. angles[i]: slug(en-kebab), ey(short eyebrow EN), h1(${CFG.lang}, may contain one <span class='hl'>...</span>), sub(${CFG.lang}), pains(3 strings ${CFG.lang}, may use <b>), agitq(${CFG.lang} 1 emotional line), stitle(${CFG.lang}), slead(${CFG.lang}), proof(${CFG.lang}), testi(3 objects {q ${CFG.lang}, n name, a "age, city"}), case({q ${CFG.lang}, n, m "age, city", r "short result ${CFG.lang}"}), ft(${CFG.lang}), fs(${CFG.lang}), acc(hex), acc2(hex), images:{hero,agitate,product,scent1,scent2,scent3,before,after,video,ugc} each = a concise ENGLISH cinematic SCENE (no lighting/lens boilerplate) that DEPICTS THE TARGET AUDIENCE PERSONA and reflects the CAMPAIGN GOAL/MESSAGE (who is in frame, their age/look, setting, emotion). hero/agitate/before = emotional storytelling with NO product; product/scent*/after = with product. Copy must hit the insight hard, hook-first (not product-first). Diversify angles. If PROVIDED WINNING INSIGHTS are supplied in the user message, output EXACTLY one angle per provided insight block, in order, and PRESERVE each hook/insight/key message/target audience (do not invent different ones) — only expand them into a full landing page.`;
+ui = localized UI labels in ${CFG.lang}. angles[i]: slug(en-kebab), ey(short eyebrow EN), h1(${CFG.lang}, may contain one <span class='hl'>...</span>), sub(${CFG.lang}), pains(3 strings ${CFG.lang}, may use <b>), agitq(${CFG.lang} 1 emotional line), stitle(${CFG.lang}), slead(${CFG.lang}), proof(${CFG.lang}), testi(3 objects {q ${CFG.lang}, n name, a "age, city"}), case({q ${CFG.lang}, n, m "age, city", r "short result ${CFG.lang}"}), ft(${CFG.lang}), fs(${CFG.lang}), acc(hex), acc2(hex), images:{hero,agitate,product,scent1,scent2,scent3,before,after} each = a concise ENGLISH real-life candid SCENE (no lighting/lens boilerplate) that DEPICTS THE TARGET AUDIENCE PERSONA and reflects the CAMPAIGN GOAL/MESSAGE (who is in frame, their age/look, setting, emotion). hero/agitate/before = emotional storytelling with NO product; product/scent*/after = with product. Copy must hit the insight hard, hook-first (not product-first). Diversify angles. If PROVIDED WINNING INSIGHTS are supplied in the user message, output EXACTLY one angle per provided insight block, in order, and PRESERVE each hook/insight/key message/target audience (do not invent different ones) — only expand them into a full landing page.`;
   const user=`PRODUCT: ${CFG.product}. Price ${CFG.pold} -> ${CFG.pnew} (save ${CFG.psave}). Brand ${CFG.brand}. Currency ${CFG.curr}.\nCAMPAIGN GOAL: ${CFG.goal}. KEY MESSAGE: ${CFG.msg||"(infer a strong one)"}. TARGET AUDIENCE: ${CFG.audience||"(infer from product)"}.
 ${CFG.guide? "BRAND GUIDELINE: "+CFG.guide : ""}
 ${CFG.dna? "BRAND DNA given: "+CFG.dna : "Create a fitting Brand Visual DNA."}
@@ -251,7 +264,7 @@ WINNING IDEA/SCRIPT:\n${$('#idea').value.trim()||'(empty — infer from product)
     if(data.dna&&!CFG.dna)CFG.dna=data.dna; CFG.audienceVisual=data.audience_visual||CFG.audience||""; UI=data.ui||{}; ANGLES=data.angles||[];
     LPS=ANGLES.map(a=>({a,videos:'',b64:{},slots:buildSlots(a)}));
     $('#prog1').style.width='100%';$('#st1').innerHTML=`<b style="color:var(--acc)">Đã thiết kế ${ANGLES.length} LP (${CFG.lang}).</b> Sang bước 2 tạo ảnh.`;
-    $('#genImg').disabled=false; renderLPgrid();
+    $('#genImg').disabled=false; var _s=$('#scrapeTt');if(_s)_s.disabled=false; renderLPgrid();
   }catch(e){$('#st1').innerHTML='<span style="color:var(--bad)">Lỗi: '+e.message+'</span>';}
   $('#genCfg').disabled=false;
 }
@@ -306,6 +319,32 @@ const ICONS={
  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>'
 };
 function svgi(n){return '<svg class="ic-svg" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';}
+function ytEmbed(u){if(!u)return '';u=(''+u).trim();var y=ytId(u);if(y)return '<div class="pvid"><iframe src="https://www.youtube.com/embed/'+y+'" title="Video sản phẩm" loading="lazy" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>';var t=ttId(u);if(t)return '<div class="pvid"><iframe src="https://www.tiktok.com/embed/v2/'+t+'" title="Video sản phẩm" loading="lazy" allowfullscreen></iframe></div>';return '';}
+function lpKeyword(lp){var a=lp.a;var prod=(CFG.product||'').split(/[,(]/)[0].trim().split(/\s+/).slice(0,4).join(' ');var h=(a.h1||'').replace(/<[^>]+>/g,'').replace(/[.!?,]/g,'').split(/\s+/).slice(0,4).join(' ');var kw=(prod+' '+h).trim();return kw||CFG.product||CFG.brand||'review';}
+async function scrapeTikTok(){
+  if(!CFG||!LPS.length){alert('Hãy bấm "AI thiết kế Landing Page" trước.');return;}
+  var token=(CFG.apify)||($('#apify')&&$('#apify').value.trim());
+  if(!token){alert('Nhập APIFY API token ở Bước 1 (ô "APIFY API token") trước.');return;}
+  var btn=$('#scrapeTt'),st=$('#scrapeStatus');if(btn)btn.disabled=true;
+  var okCount=0;
+  for(var i=0;i<LPS.length;i++){
+    var lp=LPS[i],kw=lpKeyword(lp);
+    if(st)st.textContent='Đang cào TikTok ['+(i+1)+'/'+LPS.length+']: "'+kw+'" (mỗi LP ~30–90s)...';
+    try{
+      var url='https://api.apify.com/v2/acts/clockworks~tiktok-scraper/run-sync-get-dataset-items?token='+encodeURIComponent(token)+'&maxItems=10';
+      var body={searchQueries:[kw],resultsPerPage:10,shouldDownloadVideos:false,shouldDownloadCovers:false,shouldDownloadSubtitles:false,proxyConfiguration:{useApifyProxy:true}};
+      var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!res.ok){var tx=await res.text();throw new Error('HTTP '+res.status+' '+tx.slice(0,140));}
+      var items=await res.json();
+      var links=(items||[]).map(function(it){return it.webVideoUrl||it.videoUrl||it.submittedVideoUrl||'';}).filter(Boolean).slice(0,10);
+      lp.videos=links.join('\n');okCount++;
+      var stt=$('#lpst'+i);if(stt)stt.textContent='TikTok: '+links.length+' video';
+      var ta=document.getElementById('ed_videos_'+i);if(ta)ta.value=lp.videos;
+    }catch(e){if(st)st.innerHTML='<span style="color:var(--bad)">LP '+(i+1)+' lỗi: '+(e.message||e)+' — kiểm tra token/credit APIFY hoặc CORS.</span>';}
+  }
+  if(st)st.innerHTML='<span style="color:var(--acc)">✓ Đã cào xong '+okCount+'/'+LPS.length+' LP. Bấm Preview/Tải để áp dụng video vào trang (không cần tạo lại ảnh).</span>';
+  if(btn)btn.disabled=false;
+}
 function renderLP(lp,srcOf){
   const a=lp.a,C=CFG,acc=a.acc||'#19c3c9',acc2=a.acc2||'#ff7a4e',CUR=curISO(C.curr);
   const S=(k,r)=>srcOf(k)||'';
@@ -314,7 +353,7 @@ function renderLP(lp,srcOf){
   const img=(k,r)=>{const s=S(k,r);return s?`<img src="${s}" alt="${esc(slug(k))}" loading="lazy" style="width:100%;display:block;border-radius:14px;aspect-ratio:${r};object-fit:cover">`:`<div class="noimg" style="aspect-ratio:${r};border-radius:14px">ảnh ${k}</div>`;};
   const pains=(a.pains||[]).map(p=>`<div class="pain"><div class="x">✕</div><div>${p}</div></div>`).join('');
   const testi=(a.testi||[]).map(t=>`<div class="tcard"><div class="stars">★★★★★</div><p style="margin-top:8px;color:#e6ebf2">"${esc(t.q)}"</p><div class="who"><div class="av"></div><div><b>${esc(t.n)}</b> <span>· ${esc(t.a)}</span></div></div></div>`).join('');
-  const ugc=[1,2,3,4,5,6].map(k=>`<img src="${S('ugc'+k,'1/1')}" loading="lazy" onerror="this.style.opacity=.15">`).join('');
+  const ugc=(UGC||[]).map((u,idx)=>`<img src="${ASSETMODE?('assets/ugc-'+idx+'.jpg'):u.url}" loading="lazy" alt="khách hàng ${idx+1}">`).join('');
   const faqs=(UI.faqs||[{q:'?',a:'.'}]).map(f=>`<details class="faq"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
   const reasons=(UI.reasons||['','','','']);const emo=['💧','⚖️','🍸','✨'];const cs=a.case||{};
   const vids=videoEmbeds(lp.videos);
@@ -322,7 +361,7 @@ function renderLP(lp,srcOf){
   const SK=skinTokens(C.skin,acc,acc2);
   const css=LPCSS.replace(/__BG__/g,SK.bg).replace(/__S1__/g,SK.s1).replace(/__S2__/g,SK.s2).replace(/__LINE__/g,SK.line).replace(/__ACC__/g,SK.acc).replace(/__ACC2__/g,SK.acc2);
   return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800;900&display=swap" rel="stylesheet"><style>${css}</style></head><body>
-<div class="hd"><div class="logo">${esc(C.brand)}</div><a href="#order" class="hcta">${esc(L('cta','ĐẶT NGAY'))}</a></div>
+<div class="hd"><div class="logo">${esc(C.brand)}</div><nav class="hnav"><a href="#features">Lợi ích</a><a href="#reviews">Đánh giá</a><a href="#offer">Ưu đãi</a><a href="#faq">FAQ</a><a href="#order">Đặt hàng</a></nav></div>
 <div class="marq"><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span></div>
 ${heroScene()}
 <section class="band"><div style="max-width:620px;margin:0 auto">${pains}</div></section>
@@ -330,16 +369,16 @@ ${scene('agitate','16/9','', '"'+esc(a.agitq||'')+'"','', 'center')}
 ${scene('product','1/1',esc(L('sec_solution','Giải pháp')), esc(a.stitle||''), esc(a.slead||''),'bottom')}
 <section class="band center"><a href="#order" class="btn ghost" style="max-width:420px">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
 <section class="scent-strip">${['scent1','scent2','scent3'].map((k,i)=>`<figure><img src="${S(k,'4/5')}" loading="lazy" onerror="this.style.opacity=.15"><figcaption>${esc((reasons[i]||['Juicy','Beachy','Milky'][i]))}</figcaption></figure>`).join('')}</section>
-<section class="band"><span class="eyebrow">${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</span><h2>${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</h2><div class="bgrid">${reasons.map((r,i)=>`<div class="ben"><div class="e">${emo[i]||'✔'}</div><b>${esc(r)}</b></div>`).join('')}</div></section>
+<section id="features" class="band"><span class="eyebrow">${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</span><h2>${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</h2><div class="bgrid">${reasons.map((r,i)=>`<div class="ben"><div class="e">${emo[i]||'✔'}</div><b>${esc(r)}</b></div>`).join('')}</div></section>
 <section class="split-wrap reveal"><div class="band" style="padding-bottom:0"><span class="eyebrow">${L('before','TRƯỚC')} & ${L('after','SAU')}</span></div><div class="split"><figure><img src="${S('before','1/1')}" loading="lazy"><figcaption class="b1">${L('before','TRƯỚC')}</figcaption></figure><figure><img src="${S('after','1/1')}" loading="lazy"><figcaption class="b2">${L('after','SAU')}</figcaption></figure></div></section>
 <section class="band"><div class="stats"><div class="stat"><div class="n" data-count="400000" data-suf="+">0</div><div class="l">khách</div></div><div class="stat"><div class="n" data-count="12000" data-suf="+">0</div><div class="l">★ review</div></div><div class="stat"><div class="n" data-count="98" data-suf="%">0</div><div class="l">hài lòng</div></div></div></section>
-<section class="band"><span class="eyebrow">${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</span><h2>${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</h2><div class="rate"><div class="sc">4.9</div><div class="stars">★★★★★</div></div><div class="caro">${testi}</div><div class="sp"></div>${img('video','16/9')}<div class="ugc">${ugc}</div></section>
+<section id="reviews" class="band"><span class="eyebrow">${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</span><h2>${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</h2><div class="rate"><div class="sc">4.9</div><div class="stars">★★★★★</div></div><div class="caro">${testi}</div>${C.pvideo?`<div class="sp"></div>${ytEmbed(C.pvideo)}`:''}${ugc?`<div class="sp"></div><div class="ugc-caro">${ugc}</div>`:''}</section>
 ${vidsec}
 ${scene('after','1/1',esc(L('sec_story','Câu chuyện thật')), esc(cs.n||'')+(cs.m?', '+esc(cs.m):''), '"'+esc(cs.q||'')+'"','bottom')}
-<section class="band center"><span class="eyebrow">${L('urgency_h','Ưu đãi có hạn')}</span><h2>${L('urgency_h','Ưu đãi có hạn')}</h2><div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>Tiết kiệm</span><span class="save">${esc(C.psave)}</span></div></div></section>
+<section id="offer" class="band center"><span class="eyebrow">${L('urgency_h','Ưu đãi có hạn')}</span><h2>${L('urgency_h','Ưu đãi có hạn')}</h2><div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>Tiết kiệm</span><span class="save">${esc(C.psave)}</span></div></div></section>
 <section id="order" class="band"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required inputmode="tel"><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button><div class="trust"><span>${svgi('truck')} Free ship</span><span>${svgi('cash')} COD</span><span>${svgi('ret')} Đổi trả 7 ngày</span><span>${svgi('lock')} Bảo mật</span></div></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
 <section class="band"><div class="guar"><div class="ic">${svgi('shield')}</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
-<section class="band"><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
+<section id="faq" class="band"><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
 ${scene('hero','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
 <section class="band center"><a href="#order" class="btn" style="max-width:420px">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
 <div class="foot"><b>${esc(C.company||C.brand)}</b><br><span class="mut">${[C.hotline?('📞 '+esc(C.hotline)):'',C.cemail?('✉️ '+esc(C.cemail)):'',C.address?('📍 '+esc(C.address)):'',C.mst?('MST: '+esc(C.mst)):''].filter(Boolean).join(' · ')||'📞 Hotline · ✉️ email · Địa chỉ · MST'}</span><br><span class="mut" style="--lk:#8aa0c0"><a href="./chinh-sach-bao-mat.html" style="color:#8aa0c0;text-decoration:underline">Chính sách bảo mật</a> · <a href="./dieu-khoan-su-dung.html" style="color:#8aa0c0;text-decoration:underline">Điều khoản sử dụng</a> · <a href="./chinh-sach-thanh-toan.html" style="color:#8aa0c0;text-decoration:underline">Chính sách thanh toán</a></span><br><span class="mut">© 2026 ${esc(C.brand)}</span></div>
@@ -362,7 +401,7 @@ function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed
   ed.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:16px">✏️ Sửa LP: ${esc(a.slug)}</h2><button class="sec" onclick="document.getElementById('editor').style.display='none'">Đóng</button></div>
   <div class="ed-grid" style="margin-top:10px">
    <div>${tf('Eyebrow','ey')}${tf('H1 (có thể chứa &lt;span class=hl&gt;)','h1',60)}${tf('Sub','sub',60)}${tf('Tiêu đề giải pháp','stitle')}${tf('Mô tả giải pháp','slead',60)}${tf('Câu agitate (nỗi đau)','agitq',54)}${tf('Proof heading','proof')}${tf('CTA cuối - tiêu đề','ft')}${tf('CTA cuối - phụ đề','fs')}
-     <label>🎬 Link video KOC (YouTube/TikTok — mỗi dòng 1 link)</label><textarea oninput="LPS[${i}].videos=this.value" placeholder="https://www.tiktok.com/@.../video/123...\nhttps://youtu.be/...">${esc(lp.videos||'')}</textarea>
+     <label>🎬 Link video KOC (YouTube/TikTok — mỗi dòng 1 link) · nút APIFY sẽ tự điền</label><textarea id="ed_videos_${i}" oninput="LPS[${i}].videos=this.value" placeholder="https://www.tiktok.com/@.../video/123...\nhttps://youtu.be/...">${esc(lp.videos||'')}</textarea>
    </div>
    <div><label>Hình ảnh từng section (sửa mô tả → Tạo lại)</label><div class="imgrow">${imgs}</div></div>
   </div>
@@ -385,8 +424,8 @@ function policyPages(C){
   var tt='<h1>Chính sách thanh toán</h1><p>Chúng tôi hỗ trợ COD (thanh toán khi nhận hàng) và chuyển khoản VietQR. Thông tin chuyển khoản hiển thị khi đặt hàng; vui lòng ghi đúng nội dung để hệ thống xác nhận tự động.</p><h2>Hoàn tiền</h2><p>Hoàn tiền với đơn lỗi hoặc không giao được, theo chính sách đổi trả.</p>';
   return {'chinh-sach-bao-mat.html':W('Chính sách bảo mật',bm),'dieu-khoan-su-dung.html':W('Điều khoản sử dụng',dk),'chinh-sach-thanh-toan.html':W('Chính sách thanh toán',tt)};
 }
-async function downloadLP(i){const lp=LPS[i];const zip=new JSZip();zip.file('index.html',renderLP(lp,srcAsset(lp)));const pp=policyPages(CFG);Object.keys(pp).forEach(fn=>zip.file(fn,pp[fn]));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
-async function downloadAll(){const zip=new JSZip();const site=zip.folder('site');var pp=policyPages(CFG);LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));Object.keys(pp).forEach(fn=>f.file(fn,pp[fn]));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});});var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
+async function downloadLP(i){const lp=LPS[i];const zip=new JSZip();ASSETMODE=true;zip.file('index.html',renderLP(lp,srcAsset(lp)));ASSETMODE=false;const pp=policyPages(CFG);Object.keys(pp).forEach(fn=>zip.file(fn,pp[fn]));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});UGC.forEach((u,idx)=>{if(u.b64)as.file('ugc-'+idx+'.jpg',u.b64,{base64:true});});dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
+async function downloadAll(){const zip=new JSZip();const site=zip.folder('site');ASSETMODE=true;var pp=policyPages(CFG);LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));Object.keys(pp).forEach(fn=>f.file(fn,pp[fn]));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});UGC.forEach((u,idx)=>{if(u.b64)as.file('ugc-'+idx+'.jpg',u.b64,{base64:true});});});ASSETMODE=false;var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
 zip.file('deploy.ps1',['param([string]$Project="'+proj+'")','$ErrorActionPreference="Stop"','if(-not (Get-Command wrangler -ErrorAction SilentlyContinue)){ Write-Host "Cai wrangler..."; npm i -g wrangler }','Write-Host "Neu chua login: chay  wrangler login"','wrangler pages project create $Project --production-branch=main 2>$null','wrangler pages deploy "$PSScriptRoot\\site" --project-name=$Project','Write-Host "XONG -> https://$Project.pages.dev/<ten-lp>/"'].join('\r\n'));
 zip.file('deploy.bat',['@echo off','powershell -ExecutionPolicy Bypass -File "%~dp0deploy.ps1"','pause'].join('\r\n'));
 zip.file('deploy.sh',['#!/usr/bin/env bash','set -e','PROJECT="${1:-'+proj+'}"','command -v wrangler >/dev/null || npm i -g wrangler','wrangler pages project create "$PROJECT" --production-branch=main 2>/dev/null || true','wrangler pages deploy "$(cd "$(dirname "$0")" && pwd)/site" --project-name="$PROJECT"','echo "XONG -> https://$PROJECT.pages.dev/"'].join('\n'));
@@ -426,7 +465,7 @@ p{color:#d6dce6;font-size:15.5px}.mut{color:var(--mut)}.center{text-align:center
 body{padding-bottom:78px;font-family:'Be Vietnam Pro',-apple-system,system-ui,sans-serif}
 .wrap{max-width:none}
 .hd{position:sticky;top:0;z-index:45;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:rgba(11,13,17,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.hd .logo{font-weight:900;letter-spacing:3px}.hd .hcta{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0c0f08;font-weight:800;font-size:13px;padding:9px 15px;border-radius:10px;text-decoration:none}
+.hd .logo{font-weight:900;letter-spacing:3px;flex:none}
 .marq span{animation:mq 18s linear infinite}
 section.band{max-width:620px;margin:0 auto;padding:40px 18px}
 .scene{position:relative;width:100%;min-height:88vh;display:flex;overflow:hidden}
@@ -451,6 +490,11 @@ section.band{max-width:620px;margin:0 auto;padding:40px 18px}
 @media(min-width:980px){.sticky{display:none}}
 .ic-svg{width:1.05em;height:1.05em;vertical-align:-.16em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline-block}
 .trust .ic-svg{color:var(--acc)}.guar .ic .ic-svg{width:30px;height:30px;color:var(--ok)}
+.hnav{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;max-width:74%}.hnav::-webkit-scrollbar{display:none}.hnav a{color:var(--mut);font-size:12.5px;font-weight:700;white-space:nowrap;padding:7px 9px;border-radius:8px;text-decoration:none}.hnav a:active{color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+[id]{scroll-margin-top:60px}
+.ugc-caro{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding:4px 0 6px;scrollbar-width:none}.ugc-caro::-webkit-scrollbar{display:none}.ugc-caro img{flex:0 0 72%;scroll-snap-align:center;width:72%;aspect-ratio:4/5;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
+.pvid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000;margin-top:4px}.pvid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+@media(min-width:780px){.ugc-caro img{flex-basis:38%;width:38%}}
 `;
 
 const LPRUNTIME=`var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){if(x.target.dataset&&x.target.dataset.count){cup(x.target);}else{x.target.classList.add('in');}io.unobserve(x.target);}})},{threshold:.15});
