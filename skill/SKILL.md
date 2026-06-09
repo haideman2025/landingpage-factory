@@ -201,3 +201,8 @@ Root cause (debug): `preview()` render LP bằng **iframe `srcdoc`** → documen
 
 ## CẬP NHẬT v22-23 ✅
 **v22**: animation reveal toàn trang (gate `html.lpanim` không chớp + IO observe broad ANIMSEL + safety 2.6s reveal-all) ; khối số liệu giữa trang → `CFG.stats[]` sửa được. **v23**: tối ưu chữ-trên-ảnh (.cap font nhỏ lại + line-clamp:4 + scrim đậm + vignette center, USP lead chuyển xuống band) ; áp 5 fix từ mô phỏng: `CFG.trustBadges[]` (badge an toàn dưới hero + trong form), AI h1 SHORT, `ui.value_anchor` (neo giá trị cạnh giá), `CFG.countdownHours` (đếm ngược chỉnh được); tất cả editable trong editor (nhóm Badge/đếm ngược + nhãn value_anchor). Video review thật dùng APIFY/UGC/KOC sẵn có.
+
+## CẬP NHẬT v24 (học spotless.vn: ảnh product-cinematic + ít chữ, có điều khiển) ✅
+- **Chọn phong cách ảnh AI** (`CFG.imgStyle`): `product` (sản phẩm cinematic, không người — mặc định, kiểu spotless hero), `balance` (non-prod=người thật / prod=sản phẩm), `people` (UGC người thật như cũ). `P()` đổi prompt theo style: product→"Premium cinematic PRODUCT photography...no people", bỏ AUDIENCE/PEOPLE/ethnicity-negative khi không có người; balance/people giữ casting người thật theo thị trường. Người thật vẫn ở UGC upload + review (như spotless).
+- **Mật độ chữ** (`CFG.compactText`, mặc định compact): `.lpapp.compact` thu nhỏ thêm `.cap` h1/h2/p + clamp 3 dòng → chữ trên ảnh < ~20%, để ảnh dẫn dắt. Toggle được trong editor (render-time).
+- 2 select mới ở Bước 1 (Phong cách ảnh / Mật độ chữ). Verify: node --check + test P() 3 style + compact class/CSS + editor + regression. (Gợi ý học thêm từ spotless: bảng so sánh "vs nhãn khác" — chưa làm.)
