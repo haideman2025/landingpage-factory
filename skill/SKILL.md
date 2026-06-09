@@ -145,3 +145,10 @@ Thêm **section USP mạnh nhất** + **scent-story tương tác** cho `LP-Facto
 - **Section USP** mới (badge + title + lead + ảnh signature, responsive 1 cột→2 cột).
 - **Scent strip giờ bấm được**: mỗi hương mở **modal câu chuyện mùi hương** mượt — ảnh lớn + tên + **tháp hương Hương đầu/giữa/cuối** + nguồn gốc + payoff in nghiêng; điều hướng ‹ ›/dots/phím/Esc/click-nền; transition fade-slide. Dữ liệu `SCENTS` nhúng vào LP (img = data-url khi preview, path khi zip); hàm openScent/closeScent/navScent trong runtime LP. Graceful: không có dữ liệu hương → ẩn section USP + scent strip không bấm.
 - Verify: render test 12 case (có/không dữ liệu hương) + regression toàn bộ (xanh).
+
+## CẬP NHẬT v12 (4 tinh chỉnh trải nghiệm) ✅
+1. **APIFY cào theo HASHTAG thương hiệu/sản phẩm**: thêm ô "Hashtag cào TikTok" (mặc định = slug thương hiệu); đổi từ search-query sang **`hashtags`** của actor. Cào **1 run duy nhất** rồi **chia đều (staggered slice ~5-8 video/LP)** cho mọi LP → nhanh & rẻ hơn nhiều so với chạy mỗi LP 1 run. `ttHashtags()` + `scrapeHashtag()`.
+2. **Ảnh UGC bấm xem full**: mỗi ảnh UGC `onclick=openImg()` → mở **lightbox** ảnh lớn.
+3. **Video review bấm xem dễ**: KOC carousel đổi từ iframe nhúng nhỏ → **card có thumbnail + nút ▶** (YouTube lấy thumbnail thật); bấm mở **lightbox player lớn** (YT 16/9, TikTok 9/16). Lightbox dùng chung cho ảnh + video; đóng bằng nút/Esc/click nền, dừng video khi đóng.
+4. **Logo header gọn**: chỉ hiển thị phần thương hiệu chính (cắt trước dấu " - " / "|" / "•"…), font nhỏ + ellipsis + max-width 42%, nav co giãn (flex) → không chiếm quá nhiều chỗ.
+- Verify: node --check + test 10 case (card video, hashtag distribute, lightbox, logo) + regression toàn bộ (xanh).

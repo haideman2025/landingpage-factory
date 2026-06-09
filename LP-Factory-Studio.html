@@ -95,6 +95,7 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   <div class="row">
     <div><label>🎬 Link video sản phẩm (YouTube) — nhúng 16/9 vào trang</label><input id="pvideo" placeholder="https://youtu.be/... (để trống = không có video sản phẩm)"></div>
     <div><label>🤖 APIFY API token (tuỳ chọn — để cào video TikTok)</label><input id="apify" type="password" placeholder="apify_api_..."></div>
+    <div><label># Hashtag cào TikTok (mặc định = thương hiệu)</label><input id="tthashtag" placeholder="vd: oniiz masculinelab"></div>
   </div>
   <div class="row">
     <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
@@ -244,7 +245,7 @@ const SLOTDEFS=[['hero','4/5',false],['agitate','4/5',false],['product','4/5',tr
 
 // ---- STEP1 AI configs ----
 async function genConfigs(){
-  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),skin:($('#skin')&&$('#skin').value)||'default',pvideo:($('#pvideo')&&$('#pvideo').value.trim())||'',apify:($('#apify')&&$('#apify').value.trim())||'',n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),skin:($('#skin')&&$('#skin').value)||'default',pvideo:($('#pvideo')&&$('#pvideo').value.trim())||'',apify:($('#apify')&&$('#apify').value.trim())||'',httag:($('#tthashtag')&&$('#tthashtag').value.trim())||'',n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
   if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
   if(!CFG.key){alert('Nhập API key');return;}
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
@@ -298,8 +299,12 @@ async function buildAll(){
 function ytId(u){const m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);return m?m[1]:null;}
 function ttId(u){const m=u.match(/video\/(\d+)/);return m?m[1]:null;}
 function videoEmbeds(links){const arr=(links||'').split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);if(!arr.length)return '';
-  const slides=arr.map(u=>{let y=ytId(u);if(y)return `<div class="vslide"><iframe src="https://www.youtube.com/embed/${y}" allowfullscreen loading="lazy" style="width:100%;aspect-ratio:9/16;border:0;border-radius:14px"></iframe></div>`;let t=ttId(u);if(t)return `<div class="vslide"><iframe src="https://www.tiktok.com/embed/v2/${t}" allowfullscreen loading="lazy" style="width:100%;aspect-ratio:9/16;border:0;border-radius:14px"></iframe></div>`;return `<div class="vslide"><a href="${esc(u)}" target="_blank" style="display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;background:var(--s2);border-radius:14px;color:var(--acc)">▶ Xem video</a></div>`;}).join('');
-  return slides;}
+  return arr.map(u=>{var y=ytId(u),t=ttId(u),embed='',poster='',ratio='9/16';
+    if(y){embed='https://www.youtube.com/embed/'+y+'?autoplay=1&rel=0';poster='https://img.youtube.com/vi/'+y+'/hqdefault.jpg';ratio='16/9';}
+    else if(t){embed='https://www.tiktok.com/embed/v2/'+t;ratio='9/16';}
+    if(embed)return '<div class="vslide vcard" onclick="openVid(\''+embed+'\',\''+ratio+'\')"><div class="vthumb'+(poster?'':' nopo')+'"'+(poster?(' style="background-image:url('+poster+')"'):'')+'><span class="vplay">▶</span>'+(poster?'':'<span class="vlbl">▶ Xem review</span>')+'</div></div>';
+    return '<div class="vslide"><a href="'+esc(u)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;background:var(--s2);border-radius:14px;color:var(--acc)">▶ Xem video</a></div>';
+  }).join('');}
 
 // ---- render LP (srcOf: key -> img src) ----
 function L(k,fb){return (UI[k]&&String(UI[k]).trim())||fb;}
@@ -320,46 +325,46 @@ const ICONS={
 };
 function svgi(n){return '<svg class="ic-svg" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';}
 function ytEmbed(u){if(!u)return '';u=(''+u).trim();var y=ytId(u);if(y)return '<div class="pvid"><iframe src="https://www.youtube.com/embed/'+y+'" title="Video sản phẩm" loading="lazy" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>';var t=ttId(u);if(t)return '<div class="pvid"><iframe src="https://www.tiktok.com/embed/v2/'+t+'" title="Video sản phẩm" loading="lazy" allowfullscreen></iframe></div>';return '';}
-function lpKeyword(lp){var a=lp.a;var prod=(CFG.product||'').split(/[,(\-–]/)[0].trim().split(/\s+/).slice(0,4).join(' ');var h=(a.h1||'').replace(/<[^>]+>/g,'').replace(/[.!?,"']/g,'').split(/\s+/).slice(0,3).join(' ');var kw=(prod+' '+h).trim();return kw||CFG.product||CFG.brand||'review';}
+function ttHashtags(){var raw=(CFG.httag||'').trim();var tags;if(raw){tags=raw.split(/[\s,]+/).map(function(s){return s.replace(/#/g,'').replace(/\s+/g,'').trim();}).filter(Boolean);}else{tags=[slug(CFG.brand||'tiktok').replace(/-/g,'')];}return tags.filter(Boolean).slice(0,5);}
 async function apifyReq(url,opts){var r=await fetch(url,opts||{});var t=await r.text();var j;try{j=t?JSON.parse(t):{};}catch(e){j={_raw:t};}if(!r.ok){var m=(j&&j.error&&j.error.message)||j._raw||('HTTP '+r.status);throw new Error('HTTP '+r.status+': '+String(m).slice(0,180));}return j;}
-async function scrapeOne(token,kw,onstatus){
+async function scrapeHashtag(token,tags,limit,onstatus){
   var A='https://api.apify.com/v2',tok='token='+encodeURIComponent(token);
-  var input={searchQueries:[kw],searchSection:'/video',resultsPerPage:10,videoSearchSorting:'MOST_RELEVANT'};
+  var input={hashtags:tags,resultsPerPage:limit,proxyCountryCode:'None'};
   var run=await apifyReq(A+'/acts/clockworks~tiktok-scraper/runs?'+tok,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
   var id=run.data.id,dsId=run.data.defaultDatasetId,status=run.data.status,msg='',t0=Date.now(),n=0;
   while(status==='READY'||status==='RUNNING'){
     await new Promise(function(rs){setTimeout(rs,3000);});
-    var st=await apifyReq(A+'/actor-runs/'+id+'?'+tok);
-    status=st.data.status;dsId=st.data.defaultDatasetId||dsId;msg=st.data.statusMessage||msg;
+    var s=await apifyReq(A+'/actor-runs/'+id+'?'+tok);
+    status=s.data.status;dsId=s.data.defaultDatasetId||dsId;msg=s.data.statusMessage||msg;
     if(onstatus)onstatus(status,Math.round((Date.now()-t0)/1000),msg);
-    if(++n>120)throw new Error('quá lâu (>6 phút) — đã dừng chờ');
+    if(++n>140)throw new Error('quá lâu (>7 phút) — đã dừng chờ');
   }
   if(status!=='SUCCEEDED')throw new Error('run '+status+(msg?(' — '+msg):''));
-  var items=await apifyReq(A+'/datasets/'+dsId+'/items?'+tok+'&clean=true&limit=12');
-  var seen={},out=[];(items||[]).forEach(function(it){var u=it.webVideoUrl||it.videoUrl||it.postPage||'';if(u&&!seen[u]){seen[u]=1;out.push(u);}});
-  return out.slice(0,10);
+  var items=await apifyReq(A+'/datasets/'+dsId+'/items?'+tok+'&clean=true&limit='+limit);
+  var seen={},out=[];(items||[]).forEach(function(it){var u=it.webVideoUrl||it.videoUrl||'';if(u&&!seen[u]){seen[u]=1;out.push(u);}});
+  return out;
 }
 async function scrapeTikTok(){
   if(!CFG||!LPS.length){alert('Hãy bấm "AI thiết kế Landing Page" trước.');return;}
   var token=(CFG&&CFG.apify)||($('#apify')&&$('#apify').value.trim());
   if(!token){alert('Nhập APIFY API token ở Bước 1 (ô "APIFY API token") trước.');return;}
+  var tags=ttHashtags();
   var btn=$('#scrapeTt'),st=$('#scrapeStatus');if(btn)btn.disabled=true;
-  var ok=0,fail=0,lastErr='';
-  for(var i=0;i<LPS.length;i++){
-    var kw=lpKeyword(LPS[i]);
-    if(st)st.innerHTML='Cào TikTok ['+(i+1)+'/'+LPS.length+'] "'+kw+'" — khởi tạo run...';
-    try{
-      var onst=(function(i,kw){return function(status,sec,msg){if(st)st.innerHTML='Cào TikTok ['+(i+1)+'/'+LPS.length+'] "'+kw+'" — '+status+' '+sec+'s'+(msg?(' · '+String(msg).slice(0,80)):'');};})(i,kw);
-      var links=await scrapeOne(token,kw,onst);
-      LPS[i].videos=links.join('\n');ok++;
-      var stt=$('#lpst'+i);if(stt)stt.textContent='TikTok: '+links.length+' video';
+  if(st)st.innerHTML='Cào TikTok theo hashtag #'+tags.join(' #')+' — khởi tạo run...';
+  try{
+    var want=Math.min(80,Math.max(20,LPS.length*8));
+    var links=await scrapeHashtag(token,tags,want,function(status,sec,msg){if(st)st.innerHTML='Cào #'+tags.join(' #')+' — '+status+' '+sec+'s'+(msg?(' · '+String(msg).slice(0,80)):'');});
+    if(!links.length){if(st)st.innerHTML='<span style="color:var(--bad)">Không có video cho hashtag #'+tags.join(' #')+'. Thử hashtag khác (ô "Hashtag cào TikTok") hoặc kiểm tra credit APIFY.</span>';if(btn)btn.disabled=false;return;}
+    var per=Math.max(5,Math.min(8,Math.ceil(links.length/LPS.length)));
+    for(var i=0;i<LPS.length;i++){
+      var out=[],start=(i*per)%links.length;
+      for(var j=0;j<per*2&&out.length<per;j++){var u=links[(start+j)%links.length];if(out.indexOf(u)<0)out.push(u);}
+      LPS[i].videos=out.join('\n');
+      var stt=$('#lpst'+i);if(stt)stt.textContent='TikTok: '+out.length+' video';
       var ta=document.getElementById('ed_videos_'+i);if(ta)ta.value=LPS[i].videos;
-    }catch(e){fail++;lastErr=(e&&e.message)||String(e);var stt2=$('#lpst'+i);if(stt2)stt2.textContent='TikTok lỗi';}
-  }
-  if(st){
-    if(ok>0)st.innerHTML='<span style="color:var(--acc)">✓ Cào xong '+ok+'/'+LPS.length+' LP'+(fail?(' ('+fail+' lỗi)'):'')+'. Bấm Preview/Tải để áp dụng (không cần tạo lại ảnh).</span>'+(fail?('<br><span style="color:var(--bad)">Lỗi gần nhất: '+lastErr+'</span>'):'');
-    else st.innerHTML='<span style="color:var(--bad)">✗ Không cào được LP nào. Lỗi: '+lastErr+'<br>Kiểm tra: token đúng? Tài khoản APIFY còn credit/đang trial actor <b>clockworks/tiktok-scraper</b>? (Actor tính phí — vào apify.com → Store → mở actor → Start free trial.)</span>';
-  }
+    }
+    if(st)st.innerHTML='<span style="color:var(--acc)">✓ Cào '+links.length+' video #'+tags.join(' #')+' → chia cho '+LPS.length+' LP (~'+per+'/LP). Bấm Preview/Tải để áp dụng.</span>';
+  }catch(e){if(st)st.innerHTML='<span style="color:var(--bad)">Lỗi: '+((e&&e.message)||e)+'<br>Kiểm tra token + credit/trial actor <b>clockworks/tiktok-scraper</b> (apify.com → Store → Start free trial).</span>';}
   if(btn)btn.disabled=false;
 }
 function renderLP(lp,srcOf){
@@ -370,7 +375,7 @@ function renderLP(lp,srcOf){
   const img=(k,r)=>{const s=S(k,r);return s?`<img src="${s}" alt="${esc(slug(k))}" loading="lazy" style="width:100%;display:block;border-radius:14px;aspect-ratio:${r};object-fit:cover">`:`<div class="noimg" style="aspect-ratio:${r};border-radius:14px">ảnh ${k}</div>`;};
   const pains=(a.pains||[]).map(p=>`<div class="pain"><div class="x">✕</div><div>${p}</div></div>`).join('');
   const testi=(a.testi||[]).map(t=>`<div class="tcard"><div class="stars">★★★★★</div><p style="margin-top:8px;color:#e6ebf2">"${esc(t.q)}"</p><div class="who"><div class="av"></div><div><b>${esc(t.n)}</b> <span>· ${esc(t.a)}</span></div></div></div>`).join('');
-  const ugc=(UGC||[]).map((u,idx)=>`<img src="${ASSETMODE?('assets/ugc-'+idx+'.jpg'):u.url}" loading="lazy" alt="khách hàng ${idx+1}">`).join('');
+  const ugc=(UGC||[]).map((u,idx)=>{const src=ASSETMODE?('assets/ugc-'+idx+'.jpg'):u.url;return `<img src="${src}" loading="lazy" alt="khách hàng ${idx+1}" onclick="openImg('${src}')">`;}).join('');
   const faqs=(UI.faqs||[{q:'?',a:'.'}]).map(f=>`<details class="faq"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
   const reasons=(UI.reasons||['','','','']);const emo=['💧','⚖️','🍸','✨'];const cs=a.case||{};
   const USP=C.usp;const SC=(C.scents||[]).slice(0,3).map((s,i)=>Object.assign({},s,{img:S('scent'+(i+1),'4/5')}));
@@ -379,7 +384,7 @@ function renderLP(lp,srcOf){
   const SK=skinTokens(C.skin,acc,acc2);
   const css=LPCSS.replace(/__BG__/g,SK.bg).replace(/__S1__/g,SK.s1).replace(/__S2__/g,SK.s2).replace(/__LINE__/g,SK.line).replace(/__ACC__/g,SK.acc).replace(/__ACC2__/g,SK.acc2);
   return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800;900&display=swap" rel="stylesheet"><style>${css}</style></head><body>
-<div class="hd"><div class="logo">${esc(C.brand)}</div><nav class="hnav"><a href="#features">Lợi ích</a><a href="#reviews">Đánh giá</a><a href="#offer">Ưu đãi</a><a href="#faq">FAQ</a><a href="#order">Đặt hàng</a></nav></div>
+<div class="hd"><div class="logo" title="${esc(C.brand)}">${esc(((C.brand||'').split(/[|•·–—]| - | \/ /)[0].trim())||C.brand)}</div><nav class="hnav"><a href="#features">Lợi ích</a><a href="#reviews">Đánh giá</a><a href="#offer">Ưu đãi</a><a href="#faq">FAQ</a><a href="#order">Đặt hàng</a></nav></div>
 <div class="marq"><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span></div>
 ${heroScene()}
 <section class="band"><div style="max-width:620px;margin:0 auto">${pains}</div></section>
@@ -407,6 +412,7 @@ ${scene('closing','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
 ${C.pixel?`<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',${JSON.stringify(C.pixel)});fbq('track','PageView');fbq('track','ViewContent',{content_type:'product',currency:'${CUR}'});<\/script>`:''}
 ${C.ttpixel?`<script>!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};var s=d.createElement("script");s.type="text/javascript";s.async=!0;s.src=r+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(s,a)};ttq.load('${C.ttpixel}');ttq.page();}(window,document,'ttq');<\/script>`:''}
 <div id="scentModal" class="smodal"><div class="sbox"><button class="sclose" onclick="closeScent()" aria-label="Đóng">✕</button><div class="simg"><img id="sm_img" alt=""></div><div class="sinfo"><div class="sname" id="sm_name"></div><div class="sorigin" id="sm_origin"></div><div class="spyr"><div class="prow"><span class="plab">Hương đầu</span><span class="pval" id="sm_top"></span></div><div class="prow"><span class="plab">Hương giữa</span><span class="pval" id="sm_heart"></span></div><div class="prow"><span class="plab">Hương cuối</span><span class="pval" id="sm_base"></span></div></div><div class="spayoff" id="sm_payoff"></div><div class="snav"><button class="sarrow" onclick="navScent(-1)" aria-label="Trước">‹</button><span class="sdots" id="sm_dots"></span><button class="sarrow" onclick="navScent(1)" aria-label="Sau">›</button></div></div></div></div>
+<div id="lightbox" class="lbx"><button class="lbclose" onclick="closeLb()" aria-label="Đóng">✕</button><img id="lb_img" alt=""><div class="lb_vid" id="lb_vidwrap"><iframe id="lb_vid_if" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div></div>
 <script>${LPRUNTIME}<\/script></body></html>`;
 }
 function srcData(lp){return k=>lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):null;}
@@ -486,7 +492,7 @@ p{color:#d6dce6;font-size:15.5px}.mut{color:var(--mut)}.center{text-align:center
 body{padding-bottom:78px;font-family:'Be Vietnam Pro',-apple-system,system-ui,sans-serif}
 .wrap{max-width:none}
 .hd{position:sticky;top:0;z-index:45;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:rgba(11,13,17,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.hd .logo{font-weight:900;letter-spacing:3px;flex:none}
+.hd .logo{font-weight:900;letter-spacing:1.5px;font-size:14px;flex:0 1 auto;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .marq span{animation:mq 18s linear infinite}
 section.band{max-width:620px;margin:0 auto;padding:40px 18px}
 .scene{position:relative;width:100%;min-height:88vh;display:flex;overflow:hidden}
@@ -511,7 +517,7 @@ section.band{max-width:620px;margin:0 auto;padding:40px 18px}
 @media(min-width:980px){.sticky{display:none}}
 .ic-svg{width:1.05em;height:1.05em;vertical-align:-.16em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline-block}
 .trust .ic-svg{color:var(--acc)}.guar .ic .ic-svg{width:30px;height:30px;color:var(--ok)}
-.hnav{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;max-width:74%}.hnav::-webkit-scrollbar{display:none}.hnav a{color:var(--mut);font-size:12.5px;font-weight:700;white-space:nowrap;padding:7px 9px;border-radius:8px;text-decoration:none}.hnav a:active{color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.hnav{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1 1 auto;min-width:0;justify-content:flex-end}.hnav::-webkit-scrollbar{display:none}.hnav a{color:var(--mut);font-size:12.5px;font-weight:700;white-space:nowrap;padding:7px 9px;border-radius:8px;text-decoration:none}.hnav a:active{color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
 [id]{scroll-margin-top:60px}
 .ugc-caro{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding:4px 0 6px;scrollbar-width:none}.ugc-caro::-webkit-scrollbar{display:none}.ugc-caro img{flex:0 0 72%;scroll-snap-align:center;width:72%;aspect-ratio:4/5;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
 .pvid{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000;margin-top:4px}.pvid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -528,6 +534,9 @@ section.band{max-width:620px;margin:0 auto;padding:40px 18px}
 .smodal .spayoff{font-size:15.5px;font-style:italic;color:#fff;margin-top:8px;line-height:1.5}
 .smodal .snav{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.smodal .sarrow{width:40px;height:40px;border-radius:50%;background:var(--s2);border:1px solid var(--line);color:var(--ink);font-size:20px;cursor:pointer}.smodal .sdots{display:flex;gap:7px}.smodal .sdots i{width:8px;height:8px;border-radius:50%;background:var(--line);display:inline-block}.smodal .sdots i.on{background:var(--acc)}
 .smodal .sbox.in .simg img,.smodal .sbox.in .sinfo{animation:sfade .4s ease}@keyframes sfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.vcard{cursor:pointer}.vthumb{position:relative;aspect-ratio:9/16;border-radius:14px;background-size:cover;background-position:center;background-color:var(--s2);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line)}.vthumb.nopo{background:linear-gradient(160deg,var(--s2),color-mix(in srgb,var(--acc) 22%,var(--s2)))}.vthumb .vplay{width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;padding-left:4px;transition:transform .2s}.vcard:active .vthumb .vplay{transform:scale(.9)}.vthumb .vlbl{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:#fff}
+.ugc-caro img{cursor:zoom-in}
+.lbx{position:fixed;inset:0;z-index:130;background:rgba(4,6,10,.93);display:none;align-items:center;justify-content:center;padding:20px}.lbx.open{display:flex}.lbx img{max-width:100%;max-height:90vh;border-radius:12px;display:none}.lbx .lb_vid{display:none;width:100%;max-width:420px}.lbx.r169 .lb_vid{max-width:780px}.lbx .lb_vid iframe{width:100%;aspect-ratio:9/16;border:0;border-radius:14px;background:#000}.lbx.r169 .lb_vid iframe{aspect-ratio:16/9}.lbx .lbclose{position:absolute;top:14px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;border:0;font-size:18px;cursor:pointer;z-index:2}
 `;
 
 const LPRUNTIME=`var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){if(x.target.dataset&&x.target.dataset.count){cup(x.target);}else{x.target.classList.add('in');}io.unobserve(x.target);}})},{threshold:.15});
@@ -553,6 +562,13 @@ function closeScent(){var m=document.getElementById('scentModal');if(m){m.classL
 function navScent(d){if(!window.SCENTS||!SCENTS.length)return;SMI=(SMI+d+SCENTS.length)%SCENTS.length;fillScent();}
 window.openScent=openScent;window.closeScent=closeScent;window.navScent=navScent;
 document.addEventListener('keydown',function(e){var m=document.getElementById('scentModal');if(!m||!m.classList.contains('open'))return;if(e.key==='Escape')closeScent();else if(e.key==='ArrowLeft')navScent(-1);else if(e.key==='ArrowRight')navScent(1);});
-var _sm=document.getElementById('scentModal');if(_sm)_sm.addEventListener('click',function(e){if(e.target===_sm)closeScent();});`;
+var _sm=document.getElementById('scentModal');if(_sm)_sm.addEventListener('click',function(e){if(e.target===_sm)closeScent();});
+function _lb(){return document.getElementById('lightbox');}
+function openImg(src){var l=_lb();if(!l)return;var im=document.getElementById('lb_img');im.src=src;im.style.display='block';document.getElementById('lb_vidwrap').style.display='none';l.classList.remove('r169');l.classList.add('open');document.body.style.overflow='hidden';}
+function openVid(url,ratio){var l=_lb();if(!l)return;document.getElementById('lb_img').style.display='none';document.getElementById('lb_vidwrap').style.display='block';document.getElementById('lb_vid_if').src=url;if(ratio==='16/9')l.classList.add('r169');else l.classList.remove('r169');l.classList.add('open');document.body.style.overflow='hidden';}
+function closeLb(){var l=_lb();if(!l)return;l.classList.remove('open');document.getElementById('lb_vid_if').src='';document.body.style.overflow='';}
+window.openImg=openImg;window.openVid=openVid;window.closeLb=closeLb;
+var _lbx=_lb();if(_lbx)_lbx.addEventListener('click',function(e){if(e.target===_lbx)closeLb();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLb();});`;
 </script>
 </body></html>
