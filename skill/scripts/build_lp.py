@@ -5,7 +5,7 @@
 - Output: ./out/<slug>.html + ./out/index.html
 Sửa CONFIG + ANGLES cho ngành hàng khác rồi chạy: python3 build_lp.py
 """
-import os, html as _h
+import os, re, html as _h
 HERE=os.path.dirname(os.path.abspath(__file__))
 OUT=os.path.join(HERE,"out_plus"); os.makedirs(OUT,exist_ok=True)
 
@@ -328,7 +328,7 @@ def page(c):
     H.append(f'<section class="center hero"><h2 class="reveal">{c["ft"]}</h2><p class="reveal d1 sub">{c["fs"]}</p><a href="#order" class="btn reveal d2">ĐẶT COMBO {CONFIG["price_new"]} NGAY →</a></section>')
     H.append(f'<div class="foot"><b>{CONFIG["company"]}</b> · {CONFIG["brand"]}<br>Hotline {CONFIG["hotline"]} · {CONFIG["email"]}<br><span style="opacity:.6">© 2026 {CONFIG["brand"]} · Đã thông báo Bộ Công Thương</span></div></div>')
     H.append(f'<div class="sticky"><div class="p"><b>{CONFIG["price_new"]}</b> <s>{CONFIG["price_old"]}</s></div><a href="#order" class="btn">ĐẶT NGAY →</a></div>')
-    H.append(f'<script>var SHEET_ENDPOINT="";var LP_NAME="{c["title"]}";</script>')
+    H.append(f'<script>var SHEET_ENDPOINT="";var LP_NAME="{c["title"]}";var LP_ID="{c["slug"]}";var UNIT_PRICE='+str(int(re.sub(r"[^0-9]","",CONFIG["price_new"]) or 0))+';var CURRENCY="VND";</script>')
     H.append("<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','"+PX+"');fbq('track','PageView');</script>")
     H.append('<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id='+PX+'&ev=PageView&noscript=1"/></noscript>')
     H.append(r"""<script>
@@ -340,7 +340,7 @@ var vc=false;window.addEventListener('scroll',function(){if(vc)return;if((window
 (function(){var end=Date.now()+22*3600*1000;function t(){var d=Math.max(0,end-Date.now()),h=Math.floor(d/3.6e6),m=Math.floor(d%3.6e6/6e4),s=Math.floor(d%6e4/1e3);var H=document.getElementById('cd-h');if(!H)return;H.textContent=String(h).padStart(2,'0');document.getElementById('cd-m').textContent=String(m).padStart(2,'0');document.getElementById('cd-s').textContent=String(s).padStart(2,'0');}t();setInterval(t,1000);})();
 document.querySelectorAll('.tab').forEach(function(tb){tb.addEventListener('click',function(){var i=+tb.dataset.t;document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});tb.classList.add('on');var ps=document.querySelectorAll('.scpane');ps.forEach(function(x){x.classList.remove('on')});ps[i].classList.add('on');});});
 function cpp(b){navigator.clipboard.writeText(b.dataset.p).then(function(){var o=b.textContent;b.textContent='OK';b.classList.add('done');setTimeout(function(){b.textContent=o;b.classList.remove('done')},1300)})}
-document.getElementById('codForm').addEventListener('submit',function(e){e.preventDefault();var f=e.target;var data={lp:LP_NAME,name:f.name.value,phone:f.phone.value,address:f.address.value,fav:f.fav.value,qty:f.qty.value,ts:new Date().toISOString()};try{fbq('track','Lead',{content_name:LP_NAME,value:429000,currency:'VND'});}catch(x){}function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});
+function ck(n){var v=('; '+document.cookie).split('; '+n+'=');return v.length===2?v.pop().split(';').shift():''}function gp(k){try{return new URLSearchParams(location.search).get(k)||''}catch(e){return ''}}document.getElementById('codForm').addEventListener('submit',function(e){e.preventDefault();var f=e.target;var eid='lead-'+Date.now()+'-'+Math.random().toString(16).slice(2,10);var q=parseInt(f.qty.value)||1;var val=(typeof UNIT_PRICE!=='undefined'?UNIT_PRICE:0)*q;var CUR=(typeof CURRENCY!=='undefined'?CURRENCY:'VND');try{if(window.fbq){fbq('track','Lead',{value:val,currency:CUR,content_name:LP_NAME},{eventID:eid});fbq('track','Purchase',{value:val,currency:CUR,content_name:LP_NAME},{eventID:'p_'+eid});}}catch(x){}var oc=(Date.now().toString(36)+Math.random().toString(36).slice(2)).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);var data={ts:new Date().toISOString(),order_code:oc,lp:LP_NAME,ev:'Purchase',value:val,currency:CUR,name:f.name.value,phone:f.phone.value,address:f.address.value,fav:(f.fav?f.fav.value:''),qty:String(q),eid:eid,fbp:ck('_fbp'),fbc:ck('_fbc')||(gp('fbclid')?('fb.1.'+Date.now()+'.'+gp('fbclid')):''),ttp:ck('_ttp'),utm_source:gp('utm_source'),utm_medium:gp('utm_medium'),utm_campaign:gp('utm_campaign'),src:location.href,website:location.hostname};function done(){f.style.display='none';var th=document.getElementById('thanks');th.style.display='block';th.scrollIntoView({behavior:'smooth'});}if(SHEET_ENDPOINT){fetch(SHEET_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams(data)}).then(done).catch(done);}else{done();}return false;});
 </script></body></html>""")
     return "".join(H)
 

@@ -41,3 +41,18 @@ hero (4:5) · agitate (16:9) · product trio (1:1) · 3 scent/variant macros (4:
 - Use the real product photo as reference → correct packaging every time.
 - For text-heavy hero/offer slides, prefer generating clean background + add HTML text overlay (don't bake text into the image).
 - Export JPEG ~0.85 quality (tool does this) for fast-loading, SEO-friendly assets.
+
+---
+
+## Premium "Spotless-grade" product-led recipe (V5)
+
+Dùng cho hero & scene desire — **sản phẩm là nhân vật chính**, ít/không người, look CGI điện ảnh cao cấp (tham chiếu spotless.vn).
+
+**Template:**
+`Cinematic product hero of [PRODUCT, keep exact packaging/label from attached reference], floating/standing on [natural premium set: wet dark basalt rock / still water with ripple reflection / cracked stone / silk fabric], dramatic [warm golden | cool moonlight] rim light, soft volumetric haze, shallow depth of field, ultra-detailed 3D render, glossy water droplets, luxury skincare campaign aesthetic, [BRAND palette hex], 9:16 (mobile hero) | 1:1 (collection tile), photoreal, high contrast, negative space for text at [bottom|side] — no people, no text, no logo overlay.`
+
+**Nguyên tắc:**
+- 1 **art-direction** thống nhất cho cả series (cùng set + lighting + palette) → nhìn là biết 1 brand (như 3 collection tile của spotless).
+- Chừa **khoảng trống (negative space)** ở đáy/bên để đặt caption — đỡ đè chữ.
+- Sản phẩm chiếm 40–60% khung, sắc nét; hậu cảnh bokeh/haze.
+- Người thật để dành riêng cho ảnh UGC / before-after / review (chụp thật, mặt thật).

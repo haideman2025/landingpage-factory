@@ -9,3 +9,5 @@ dist/
 .env.local
 .vercel/
 .vercel
+__pycache__/
+*.pyc

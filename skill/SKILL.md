@@ -14,6 +14,11 @@ Sản xuất LP HTML chuyển đổi cao theo lô, mọi ngành. Đầu ra deplo
 3. **Brand Visual DNA**: 1 đoạn prompt tiếng Anh mô tả phong cách hình ảnh thương hiệu (palette, lighting, mood, photographic style). Đoạn này được (a) nối vào CUỐI mọi prompt ảnh để mỗi ô tự đủ, và (b) hiển thị ở 1 hộp "Brand Visual DNA" đầu trang (HTML comment + box) để user dán vào ô "Add to every prompt" của LP-Image-Studio.
 4. **Mỗi ô ảnh là `<figure class="media" style="aspect-ratio:R">` chứa `<button class="pcopy" data-p="FULL_ENGLISH_PROMPT">`** → để LP-Image-Studio quét tự động.
 5. **Chuyển đổi cao**: ≥20 section đa định dạng, ≥6 CTA, sticky CTA, countdown, social proof, form COD ≤5 trường, FAQ, guarantee, pixel.
+6. **CHUẨN V5 — Premium Image-Led (bắt buộc, đọc `references/premium-image-led-kit.md`)**: ảnh full-bleed dẫn dắt, **chữ < 20% diện tích** (mỗi scene chỉ eyebrow + 1 headline ngắn + ≤1 dòng); hero & scene "desire" lấy **sản phẩm làm nhân vật chính** (ảnh CGI điện ảnh), người thật **chỉ** ở UGC/before-after/review (học từ spotless.vn). Bắt buộc: flow FX (thanh tiến trình cuộn + reveal + CTA shine), badge an toàn dưới CTA + cạnh form, neo giá đ/ngày, trust-stat số chạy, **video TikTok nhúng `player/v1` (hiện thumbnail gốc — CẤM `embed/v2`)**, và form bắn **Lead + Purchase** (value = giá × qty, eid dedup) ngoài PageView/ViewContent.
+
+> ⚠️ **2 lỗi tử thần (đã gặp thực tế — không lặp lại):**
+> 1. Form POST `application/json` → Apps Script đọc `e.parameter` rỗng → chỉ ghi timestamp, **rớt toàn bộ đơn**. LUÔN dùng `x-www-form-urlencoded` + `URLSearchParams`, tên field khớp HEADERS 19 cột.
+> 2. Chữ gradient `.hl` (`color:transparent`) bị phủ `text-shadow` → bóng ma nhoè. Dùng `filter:drop-shadow(...)`, không `text-shadow`.
 
 ## Quy trình 5 bước
 
