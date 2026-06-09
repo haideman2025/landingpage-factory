@@ -1,0 +1,29 @@
+<!-- ===== LP-OPS TRACKING SNIPPET (dán trước </body> mỗi LP) ===== -->
+<!-- Thay 2 placeholder: __LP_ID__ (vd "oniiz-dating-01") và __WEBHOOK__ (n8n webhook HOẶC Apps Script /exec) -->
+<script>
+window.LP_ID="__LP_ID__";
+window.ENDPOINT="__WEBHOOK__";          // n8n = full CAPI; Apps Script = chỉ lưu Sheet (không CAPI)
+(function(){
+ function gp(n){return new URLSearchParams(location.search).get(n)||""}
+ function ck(n){var m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');return m?m.pop():""}
+ // UTM + click ids
+ window._lp={lp_id:LP_ID,
+   utm_source:gp('utm_source'),utm_medium:gp('utm_medium'),utm_campaign:gp('utm_campaign'),
+   utm_content:gp('utm_content'),utm_term:gp('utm_term'),
+   fbclid:gp('fbclid'),ttclid:gp('ttclid'),
+   fbp:ck('_fbp'),fbc:ck('_fbc')||(gp('fbclid')?('fb.1.'+Date.now()+'.'+gp('fbclid')):""),
+   ttp:ck('_ttp'),
+   url:location.href,ua:navigator.userAgent,ip:""};
+ // IP (Cloudflare trace -> fallback ipify)
+ fetch('https://www.cloudflare.com/cdn-cgi/trace').then(r=>r.text()).then(t=>{var m=t.match(/ip=(.*)/);if(m)window._lp.ip=m[1].trim();}).catch(()=>{fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(j=>window._lp.ip=j.ip).catch(()=>{});});
+ window.uuid=function(){return 'lead-'+Date.now()+'-'+Math.random().toString(16).slice(2,10)};
+})();
+// Gọi hàm này trong form submit:
+window.LP_SUBMIT=function(data){
+ var ev=window.uuid();
+ try{fbq&&fbq('track','Lead',{content_name:LP_ID,currency:'VND'},{eventID:ev});}catch(e){}
+ try{ttq&&ttq.track('SubmitForm',{},{event_id:ev});}catch(e){}
+ var payload=Object.assign({event_id:ev,event_name:'Lead',event_time:Math.floor(Date.now()/1000),ts:new Date().toISOString()},window._lp,data);
+ return fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+};
+</script>

@@ -1,0 +1,11 @@
+{
+ "name":"LP-Ops Dual CAPI (Meta + TikTok)",
+ "nodes":[
+  {"parameters":{"httpMethod":"POST","path":"lp-lead","responseMode":"onReceived"},"name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,"position":[240,300]},
+  {"parameters":{"functionCode":"const c=require('crypto');const h=s=>s?c.createHash('sha256').update(String(s).trim().toLowerCase()).digest('hex'):undefined;const d=items[0].json;return [{json:{...d,em:h(d.email),ph:h((d.phone||'').replace(/\\D/g,''))}}];"},"name":"Hash SHA-256","type":"n8n-nodes-base.function","typeVersion":1,"position":[460,300]},
+  {"parameters":{"method":"POST","url":"https://graph.facebook.com/v22.0/=PIXEL_ID=/events?access_token==META_TOKEN=","jsonParameters":true,"options":{},"bodyParametersJson":"={\"data\":[{\"event_name\":\"Lead\",\"event_time\":$json.event_time,\"event_id\":$json.event_id,\"action_source\":\"website\",\"event_source_url\":$json.url,\"user_data\":{\"em\":[$json.em],\"ph\":[$json.ph],\"client_ip_address\":$json.ip,\"client_user_agent\":$json.ua,\"fbc\":$json.fbc,\"fbp\":$json.fbp}}]}"},"name":"Meta CAPI","type":"n8n-nodes-base.httpRequest","typeVersion":3,"position":[700,200]},
+  {"parameters":{"method":"POST","url":"https://business-api.tiktok.com/open_api/v1.3/event/track/","jsonParameters":true,"options":{"headers":{"Access-Token":"=TT_TOKEN="}},"bodyParametersJson":"={\"event_source\":\"web\",\"event_source_id\":\"=TT_PIXEL=\",\"data\":[{\"event\":\"SubmitForm\",\"event_time\":$json.event_time,\"event_id\":$json.event_id,\"user\":{\"email\":$json.em,\"phone\":$json.ph,\"ttclid\":$json.ttclid,\"ttp\":$json.ttp,\"ip\":$json.ip,\"user_agent\":$json.ua},\"page\":{\"url\":$json.url}}]}"},"name":"TikTok Events","type":"n8n-nodes-base.httpRequest","typeVersion":3,"position":[700,400]},
+  {"parameters":{"operation":"append","sheetId":"=SHEET_ID=","range":"Leads!A:T"},"name":"Google Sheet","type":"n8n-nodes-base.googleSheets","typeVersion":2,"position":[940,300]}
+ ],
+ "connections":{"Webhook":{"main":[[{"node":"Hash SHA-256","type":"main","index":0}]]},"Hash SHA-256":{"main":[[{"node":"Meta CAPI","type":"main","index":0},{"node":"TikTok Events","type":"main","index":0},{"node":"Google Sheet","type":"main","index":0}]]}}
+}

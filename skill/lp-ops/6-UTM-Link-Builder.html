@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang=vi><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>UTM Link Builder — LP Ops</title>
+<style>:root{--bg:#0b0d11;--s1:#13171e;--ink:#f3f6fa;--mut:#94a0b2;--acc:#00d4aa;--line:#262d39}*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--ink);font-family:-apple-system,Segoe UI,Arial;padding:20px 14px}.wrap{max-width:1000px;margin:0 auto}h1{font-size:22px}.sub{color:var(--mut);font-size:13px;margin:4px 0 14px}.card{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}label{display:block;font-size:12px;color:var(--mut);font-weight:700;margin:8px 0 4px}input,textarea,select{width:100%;background:#080a0e;border:1px solid var(--line);color:#fff;border-radius:8px;padding:9px;font-size:13px}textarea{min-height:90px;font-family:inherit}button{background:var(--acc);color:#06231b;border:none;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}th{background:#1b212b;color:var(--acc)}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}code{color:#7aa2ff;word-break:break-all}</style></head><body><div class=wrap>
+<h1>🔗 UTM Link Builder</h1><div class=sub>Sinh link ads cho từng LP × nền tảng (UTM chuẩn) → dán vào trình quản lý quảng cáo. Khớp lp_id với DATA HUB để đo winner.</div>
+<div class=card><div class=row>
+<div><label>Base domain (CF/Vercel)</label><input id=dom value="https://oniiz-lp.pages.dev"></div>
+<div><label>Campaign (utm_campaign)</label><input id=camp value="thang6_combo3"></div>
+</div>
+<label>Danh sách LP (mỗi dòng: slug | tên angle)</label>
+<textarea id=lps>dating-disaster | POV hẹn hò
+her-pov | Góc nhìn người yêu
+gym-sweat | Sau buổi gym
+scent-cocktail | Hệ 3 mùi
+science-ph | Khoa học pH</textarea>
+<label>Nền tảng (utm_source, phẩy)</label><input id=srcs value="facebook,tiktok,instagram">
+<div style="margin-top:10px"><button onclick=gen()>Sinh link</button> <button onclick=csv() style="background:#1b212b;color:#fff;border:1px solid var(--line)">⬇ CSV</button></div>
+</div>
+<div class=card><table id=out><thead><tr><th>LP</th><th>Nền tảng</th><th>Link ads (UTM)</th></tr></thead><tbody></tbody></table></div>
+<script>
+let ROWS=[];
+function gen(){const dom=dom_.value.replace(/\/$/,'');const camp=camp_.value.trim();const lps=lps_.value.split('\n').map(x=>x.trim()).filter(Boolean).map(l=>{const[s,n]=l.split('|');return{slug:(s||'').trim(),name:(n||'').trim()}});const srcs=srcs_.value.split(',').map(x=>x.trim()).filter(Boolean);ROWS=[];lps.forEach(lp=>srcs.forEach(src=>{const u=`${dom}/${lp.slug}/?utm_source=${src}&utm_medium=paid&utm_campaign=${encodeURIComponent(camp)}&utm_content=${encodeURIComponent(lp.slug)}`;ROWS.push({lp:lp.name||lp.slug,src,u});}));document.querySelector('#out tbody').innerHTML=ROWS.map(r=>`<tr><td>${r.lp}</td><td>${r.src}</td><td><code>${r.u}</code></td></tr>`).join('');}
+function csv(){let c="lp,platform,url\n";ROWS.forEach(r=>c+=`"${r.lp}",${r.src},"${r.u}"\n`);const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'}));a.download='utm-links.csv';a.click();}
+window.dom_=document.getElementById('dom');window.camp_=document.getElementById('camp');window.lps_=document.getElementById('lps');window.srcs_=document.getElementById('srcs');
+gen();
+</script></div></body></html>

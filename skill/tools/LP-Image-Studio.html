@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LP Image Studio — Quét prompt &rarr; Tạo ảnh Nano Banana Pro 2 &rarr; ZIP</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#0c0f14;--s1:#151a22;--s2:#1d242f;--ink:#eef2f7;--mut:#94a0b2;--acc:#4ade80;--acc2:#2f6bff;--line:#28303d;--warn:#f0b429;--bad:#ff6b6b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.6;padding:24px 14px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:23px;margin-bottom:2px}.sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.step{width:24px;height:24px;border-radius:50%;background:var(--acc);color:#06230f;font-weight:900;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+label{display:block;font-size:12.5px;color:var(--mut);font-weight:700;margin:10px 0 5px}
+input[type=text],input[type=password],textarea,select{width:100%;background:#080a0e;border:1px solid var(--line);border-radius:10px;padding:11px;color:#fff;font-size:14px;font-family:inherit}
+textarea{resize:vertical;min-height:70px;font-size:12.5px;line-height:1.5}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}
+button{background:var(--acc);color:#06230f;border:none;border-radius:10px;padding:11px 16px;font-weight:800;font-size:14px;cursor:pointer}
+button.sec{background:var(--s2);color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.note{background:rgba(240,180,41,.1);border-left:3px solid var(--warn);border-radius:8px;padding:11px 13px;font-size:12.5px;color:#e8d9b0;margin-top:10px}
+.muted{color:var(--mut);font-size:12.5px}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--mut);cursor:pointer;font-size:13px}
+.drop.on{border-color:var(--acc);background:rgba(74,222,128,.06)}
+.pill{display:inline-block;background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:12px;margin:3px 4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
+.item{background:var(--s2);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.item .ph{aspect-ratio:1/1;background:#0a0d12;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px;position:relative;overflow:hidden}
+.item .ph img{width:100%;height:100%;object-fit:cover}
+.item .bd{padding:10px}
+.item .nm{font-size:11.5px;color:var(--acc);font-weight:700;word-break:break-all}
+.item textarea{min-height:64px;margin-top:6px}
+.item .rowb{display:flex;gap:6px;margin-top:6px}.item .rowb button{flex:1;padding:7px;font-size:12px}
+.st{font-size:11px;padding:2px 7px;border-radius:6px;font-weight:800}
+.st.wait{background:#2a313d;color:var(--mut)}.st.ok{background:rgba(74,222,128,.18);color:var(--acc)}.st.run{background:rgba(47,107,255,.2);color:#7aa2ff}.st.err{background:rgba(255,107,107,.18);color:var(--bad)}
+.bar{height:8px;background:#0a0d12;border-radius:6px;overflow:hidden;margin:10px 0}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:.3s}
+.big{font-size:15px;padding:14px;width:100%}
+code{background:#080a0e;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;color:#7aa2ff}
+a{color:#7aa2ff}
+</style></head>
+<body><div class="wrap">
+<h1>🍌 LP Image Studio</h1>
+<div class="sub">Upload template HTML → tự quét ô ảnh + prompt → tạo toàn bộ ảnh bằng <b>Nano Banana Pro 2 (Gemini 3 Pro Image)</b> với ảnh sản phẩm tham chiếu → tải ZIP (HTML hoàn chỉnh + ảnh chuẩn SEO) deploy ngay.</div>
+
+<!-- CONFIG -->
+<div class="card">
+  <h2><span class="step">0</span> Cấu hình API (AI Studio)</h2>
+  <label>Gemini API Key (lấy ở aistudio.google.com/apikey — chỉ lưu trên máy bạn)</label>
+  <input type="password" id="key" placeholder="AIza...">
+  <div class="row" style="margin-top:8px">
+    <div><label>Model (Nano Banana Pro 2)</label>
+      <input type="text" id="model" list="models" value="gemini-3-pro-image-preview">
+      <datalist id="models"></datalist>
+    </div>
+    <div style="flex:0 0 auto;display:flex;align-items:flex-end"><button class="sec" onclick="listModels()">Tải danh sách model</button></div>
+  </div>
+  <label><input type="checkbox" id="remember" style="width:auto"> Ghi nhớ key trên trình duyệt này</label>
+  <div class="note">⚠️ Mở tool qua <b>https</b> (deploy lên Cloudflare Pages, hoặc Live Server) để gọi API ổn định. Mở trực tiếp file:// có thể bị chặn CORS. Key nằm 100% trên máy bạn, không gửi đi đâu ngoài Google.</div>
+</div>
+
+<!-- STEP 1 -->
+<div class="card">
+  <h2><span class="step">1</span> Upload template HTML</h2>
+  <div class="drop" id="dropHtml">Kéo-thả hoặc bấm chọn file <b>.html</b> (template do Claude tạo, có ô ảnh + prompt)</div>
+  <input type="file" id="fileHtml" accept=".html,.htm" hidden>
+  <div id="scanInfo" class="muted" style="margin-top:10px"></div>
+</div>
+
+<!-- STEP 2 -->
+<div class="card">
+  <h2><span class="step">2</span> Upload ảnh sản phẩm (tham chiếu)</h2>
+  <div class="muted">Tải 1–5 ảnh chai/sản phẩm ONIIZ (nền sạch, rõ nhãn). AI sẽ giữ đúng bao bì/logo khi tạo ảnh.</div>
+  <div class="drop" id="dropProd" style="margin-top:8px">Kéo-thả hoặc bấm chọn ảnh sản phẩm (jpg/png)</div>
+  <input type="file" id="fileProd" accept="image/*" multiple hidden>
+  <div id="prodPrev" style="margin-top:10px"></div>
+  <label style="margin-top:12px">Thêm vào MỌI prompt (tuỳ chọn — giữ đồng bộ thương hiệu)</label>
+  <textarea id="suffix" placeholder="VD: phong cách thương hiệu ONIIZ nam tính hiện đại, chất lượng ảnh quảng cáo cao cấp"></textarea>
+</div>
+
+<!-- STEP 3 -->
+<div class="card">
+  <h2><span class="step">3</span> Tạo ảnh</h2>
+  <label>Số ảnh tạo SONG SONG cùng lúc (Tier 3 chịu tải cao → để 8–12; nếu dính rate-limit thì giảm)</label>
+  <input type="number" id="conc" value="8" min="1" max="24" style="max-width:130px">
+  <div style="margin-top:10px"></div>
+  <button class="big" id="genAll" onclick="generateAll()" disabled>⚡ Tạo toàn bộ ảnh (song song, tốc độ tối đa)</button>
+  <div class="bar"><i id="prog"></i></div>
+  <div id="status" class="muted"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- STEP 4 -->
+<div class="card">
+  <h2><span class="step">4</span> Tải ZIP hoàn chỉnh</h2>
+  <div class="muted">ZIP gồm: <code>index.html</code> (đã thay ô ảnh bằng &lt;img&gt; chuẩn SEO: alt, loading=lazy) + thư mục <code>assets/</code> ảnh .jpg. Giải nén → deploy Cloudflare Pages/Netlify.</div>
+  <button class="big" id="dl" onclick="downloadZip()" disabled style="margin-top:10px">⬇️ Tải ZIP (HTML + ảnh)</button>
+</div>
+
+<div class="sub" style="margin-top:8px">Mẹo: ảnh nào chưa ưng, sửa prompt trong ô của nó rồi bấm "Tạo lại". Khi đủ ảnh đẹp mới tải ZIP.</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let HTMLDOC=null, HTMLNAME="index.html", SLOTS=[], PRODB64=[];
+// remember key
+try{const k=localStorage.getItem('nbp_key');if(k){$('#key').value=k;$('#remember').checked=true;}const m=localStorage.getItem('nbp_model');if(m)$('#model').value=m;}catch(e){}
+$('#remember').addEventListener('change',e=>{try{if(e.target.checked){localStorage.setItem('nbp_key',$('#key').value);localStorage.setItem('nbp_model',$('#model').value);}else{localStorage.removeItem('nbp_key');}}catch(_){}});
+$('#key').addEventListener('change',()=>{if($('#remember').checked)try{localStorage.setItem('nbp_key',$('#key').value)}catch(_){}});
+
+function slug(s){return (s||'img').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,48)||'image';}
+function ratioToConf(r){r=(r||'1/1').replace(/\s/g,'');const m={'4/5':'4:5','5/4':'5:4','16/9':'16:9','9/16':'9:16','1/1':'1:1','3/4':'3:4','4/3':'4:3','3/2':'3:2','2/3':'2:3'};return m[r]||'1:1';}
+
+// ---- drop helpers ----
+function wire(drop,input,cb){drop.onclick=()=>input.click();['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('on')}));['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('on')}));drop.addEventListener('drop',ev=>{if(ev.dataTransfer.files.length)cb(ev.dataTransfer.files)});input.addEventListener('change',()=>{if(input.files.length)cb(input.files)});}
+
+// ---- STEP1 parse html ----
+wire($('#dropHtml'),$('#fileHtml'),files=>{const f=files[0];HTMLNAME=(f.name||'index.html');const r=new FileReader();r.onload=()=>{parseHTML(r.result);};r.readAsText(f);});
+function parseHTML(txt){
+  HTMLDOC=new DOMParser().parseFromString(txt,'text/html');
+  SLOTS=[];
+  // 1) figure.media (template Claude) -> prompt o .pcopy[data-p]
+  HTMLDOC.querySelectorAll('figure.media').forEach(fig=>{
+    const btn=fig.querySelector('[data-p]');const prompt=btn?btn.getAttribute('data-p'):(fig.getAttribute('data-p')||'');
+    const ar=(fig.getAttribute('style')||'').match(/aspect-ratio:\s*([0-9/.\s]+)/);
+    SLOTS.push({el:fig,type:'figure',prompt:prompt.trim(),ratio:ar?ar[1].trim():'1/1'});
+  });
+  // 2) generic [data-img-prompt] / [data-prompt] (không trùng figure)
+  HTMLDOC.querySelectorAll('[data-img-prompt],[data-prompt]').forEach(el=>{
+    if(el.closest('figure.media'))return;
+    const prompt=el.getAttribute('data-img-prompt')||el.getAttribute('data-prompt')||'';
+    SLOTS.push({el,type:'generic',prompt:prompt.trim(),ratio:'1/1'});
+  });
+  SLOTS.forEach((s,i)=>{s.idx=i;s.name='assets/'+String(i+1).padStart(2,'0')+'-'+slug(s.prompt.split('.')[0])+'.jpg';s.done=false;s.b64=null;});
+  $('#scanInfo').innerHTML = SLOTS.length? `✅ Quét được <b style="color:var(--acc)">${SLOTS.length}</b> ô ảnh cần tạo từ <b>${HTMLNAME}</b>.`:'⚠️ Không tìm thấy ô ảnh nào (figure.media hoặc data-prompt). Kiểm tra template.';
+  renderGrid(); refreshBtns();
+}
+
+// ---- STEP2 product images ----
+wire($('#dropProd'),$('#fileProd'),files=>{
+  [...files].slice(0,5).forEach(f=>{const r=new FileReader();r.onload=()=>{PRODB64.push({mime:f.type||'image/jpeg',data:r.result.split(',')[1],url:r.result});renderProd();refreshBtns();};r.readAsDataURL(f);});
+});
+function renderProd(){$('#prodPrev').innerHTML=PRODB64.map((p,i)=>`<img src="${p.url}" style="height:64px;border-radius:8px;border:1px solid var(--line);margin:0 6px 6px 0;vertical-align:middle"><button class="sec" style="padding:4px 8px;font-size:11px" onclick="PRODB64.splice(${i},1);renderProd();refreshBtns()">✕</button>`).join('')+`<div class="muted">${PRODB64.length} ảnh sản phẩm</div>`;}
+
+function refreshBtns(){const ok=SLOTS.length>0 && $('#key').value.trim();$('#genAll').disabled=!ok;$('#dl').disabled=!(SLOTS.length>0 && SLOTS.some(s=>s.done));}
+$('#key').addEventListener('input',refreshBtns);
+
+// ---- grid ----
+function renderGrid(){
+  $('#grid').innerHTML=SLOTS.map(s=>`<div class="item" id="it${s.idx}">
+    <div class="ph" id="ph${s.idx}">${s.b64?`<img src="data:image/jpeg;base64,${s.b64}">`:'<span>chưa có ảnh</span>'}</div>
+    <div class="bd"><div style="display:flex;justify-content:space-between;align-items:center"><span class="nm">#${s.idx+1} · ${s.ratio}</span><span class="st wait" id="st${s.idx}">chờ</span></div>
+    <textarea id="pr${s.idx}">${s.prompt.replace(/</g,'&lt;')}</textarea>
+    <div class="rowb"><button onclick="genOne(${s.idx})">Tạo lại</button><button class="sec" onclick="navigator.clipboard.writeText(document.getElementById('pr${s.idx}').value)">Copy</button></div></div></div>`).join('');
+}
+function setSt(i,cls,txt){const e=$('#st'+i);if(e){e.className='st '+cls;e.textContent=txt;}}
+
+// ---- API call ----
+async function callGemini(prompt,ratio){
+  const key=$('#key').value.trim(), model=$('#model').value.trim();
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+  const parts=[{text:prompt}];
+  PRODB64.forEach(p=>parts.push({inline_data:{mime_type:p.mime,data:p.data}}));
+  const mk=(ic)=>JSON.stringify({contents:[{role:'user',parts}],generationConfig:ic?{responseModalities:["IMAGE"],imageConfig:{aspectRatio:ratioToConf(ratio)}}:{responseModalities:["IMAGE"]}});
+  let res, useIC=true;
+  for(let attempt=0; attempt<6; attempt++){
+    res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:mk(useIC)});
+    if(res.ok) break;
+    if(res.status===400 && useIC){ useIC=false; continue; }            // imageConfig không hợp lệ -> bỏ
+    if(res.status===429 || res.status>=500){ await new Promise(r=>setTimeout(r, 1200*Math.pow(1.8,attempt)+Math.random()*900)); continue; } // backoff khi quá tải
+    break;
+  }
+  const j=await res.json();
+  if(!res.ok) throw new Error((j.error&&j.error.message)||('HTTP '+res.status));
+  const cand=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];
+  const img=cand.find(p=>p.inlineData||p.inline_data);
+  if(!img) throw new Error('Không có ảnh trả về (kiểm tra model hỗ trợ tạo ảnh / quota).');
+  const d=img.inlineData||img.inline_data;
+  return await toJpeg('data:'+(d.mimeType||d.mime_type||'image/png')+';base64,'+d.data);
+}
+// convert any image dataURL -> compressed jpeg base64 (SEO/perf)
+function toJpeg(dataUrl){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);resolve(c.toDataURL('image/jpeg',0.86).split(',')[1]);};im.onerror=reject;im.src=dataUrl;});}
+
+async function genOne(i){
+  const s=SLOTS[i];s.prompt=$('#pr'+i).value;
+  setSt(i,'run','đang tạo…');
+  try{const b64=await callGemini(s.prompt,s.ratio);s.b64=b64;s.done=true;$('#ph'+i).innerHTML=`<img src="data:image/jpeg;base64,${b64}">`;setSt(i,'ok','xong');}
+  catch(e){setSt(i,'err','lỗi');$('#status').innerHTML='<span style="color:var(--bad)">Ảnh #'+(i+1)+': '+e.message+'</span>';}
+  refreshBtns();
+}
+async function generateAll(){
+  $('#genAll').disabled=true;
+  var N=Math.max(1,Math.min(24,parseInt($('#conc').value)||8));
+  var queue=SLOTS.map(s=>s.idx), total=queue.length, done=0, t0=Date.now();
+  async function worker(){ while(queue.length){ var i=queue.shift(); await genOne(i); done++; $('#prog').style.width=(done/total*100)+'%'; var sec=((Date.now()-t0)/1000).toFixed(0); $('#status').textContent=`Đang tạo song song (${N} luồng)… ${done}/${total} ảnh · ${sec}s`; } }
+  var ws=[]; for(var w=0; w<Math.min(N,total); w++) ws.push(worker());
+  await Promise.all(ws);
+  var sec=((Date.now()-t0)/1000).toFixed(0);
+  $('#status').innerHTML=`<b style="color:var(--acc)">Hoàn tất ${done}/${total} ảnh trong ${sec}s.</b> Sửa ảnh chưa ưng rồi tải ZIP.`;
+  $('#genAll').disabled=false;refreshBtns();
+}
+
+async function listModels(){
+  const key=$('#key').value.trim();if(!key){alert('Nhập API key trước');return;}
+  try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+encodeURIComponent(key));const j=await r.json();
+    const dl=$('#models');dl.innerHTML='';(j.models||[]).filter(m=>/image/i.test(m.name)).forEach(m=>{const o=document.createElement('option');o.value=m.name.replace('models/','');dl.appendChild(o);});
+    $('#status').textContent='Đã tải '+(dl.children.length)+' model ảnh. Bấm vào ô Model để chọn.';
+  }catch(e){alert('Lỗi tải model: '+e.message);}
+}
+
+// ---- rebuild HTML + zip ----
+function buildHTML(){
+  const doc=HTMLDOC.cloneNode(true);
+  // map lại slot theo thứ tự DOM clone
+  const figs=doc.querySelectorAll('figure.media');
+  let fi=0;
+  SLOTS.forEach(s=>{
+    if(!s.b64) return;
+    const alt=slug(s.prompt.split('.')[0]).replace(/-/g,' ');
+    const img=doc.createElement('img');
+    img.setAttribute('src',s.name);img.setAttribute('alt',alt);img.setAttribute('loading','lazy');img.setAttribute('decoding','async');
+    img.setAttribute('style',`width:100%;display:block;border-radius:16px;aspect-ratio:${s.ratio};object-fit:cover`);
+    if(s.type==='figure'){ if(figs[fi]) figs[fi].replaceWith(img); fi++; }
+    else { // generic: nếu là <img> thì set src, else thay nội dung
+      // tìm phần tử tương ứng theo prompt
+    }
+  });
+  // generic data-prompt: set src on matching elements
+  SLOTS.filter(s=>s.type==='generic'&&s.b64).forEach(s=>{
+    const el=[...doc.querySelectorAll('[data-img-prompt],[data-prompt]')].find(e=>(e.getAttribute('data-img-prompt')||e.getAttribute('data-prompt'))===s.prompt);
+    if(el){if(el.tagName==='IMG'){el.setAttribute('src',s.name);el.setAttribute('alt',slug(s.prompt).replace(/-/g,' '));el.setAttribute('loading','lazy');}else{const im=doc.createElement('img');im.src=s.name;im.alt=slug(s.prompt).replace(/-/g,' ');im.loading='lazy';im.style.width='100%';el.replaceWith(im);}}
+  });
+  return '<!DOCTYPE html>\n'+doc.documentElement.outerHTML;
+}
+async function downloadZip(){
+  const zip=new JSZip();
+  zip.file('index.html', buildHTML());
+  const assets=zip.folder('assets');
+  SLOTS.forEach(function(s){if(s.b64) assets.file(s.name.replace('assets/',''), s.b64, {base64:true});});
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(HTMLNAME.replace(/\.html?$/,'')||'landing')+'-complete.zip';a.click();
+  $('#status').innerHTML='<b style="color:var(--acc)">Đã tải ZIP!</b> Giải nén → deploy Cloudflare Pages.';
+}
+</script>
+</body></html>

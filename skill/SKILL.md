@@ -1,0 +1,109 @@
+---
+name: high-converting-lp-factory
+description: >-
+  Nhà máy sản xuất hàng loạt landing page HTML chuyển đổi cao (dài ~20+ section, mobile-first, animation mượt) cho BẤT KỲ ngành hàng nào — DTC/mỹ phẩm/men's care/F&B/khoá học/dịch vụ/SaaS. Mỗi LP: copy tiếng Việt CÓ DẤU đầy đủ, form COD nối Google Sheet, Meta Pixel (PageView/ViewContent/Lead), và mỗi ô ảnh là 1 PROMPT TIẾNG ANH chi tiết cho Nano Banana Pro 2 (Gemini 3 Pro Image) kèm Brand Visual DNA để ảnh nhất quán toàn trang. Đi kèm tool LP-Image-Studio.html cho phép upload template + ảnh sản phẩm → tạo ảnh hàng loạt → tải ZIP (HTML + ảnh chuẩn SEO) deploy Cloudflare Pages, sẵn sàng chạy ads. Dùng skill này khi user nói: "tạo landing page chuyển đổi cao", "build LP hàng loạt", "LP COD deploy Cloudflare", "tạo 10/100 landing page", "LP cho ngành X", "sản xuất landing page chạy ads", "image prompt cho landing", hoặc cần nhân bản LP đa ngành để A/B test.
+---
+
+# High-Converting LP Factory
+
+Sản xuất LP HTML chuyển đổi cao theo lô, mọi ngành. Đầu ra deploy thẳng Cloudflare Pages. Ảnh tạo hàng loạt bằng Nano Banana Pro 2 với prompt tiếng Anh + Brand Visual DNA nhất quán.
+
+## Nguyên tắc bất biến (đọc trước khi tạo)
+1. **Copy hiển thị = tiếng Việt CÓ DẤU đầy đủ.** Tuyệt đối không viết tiếng Việt không dấu trong nội dung người dùng đọc (headline, mô tả, FAQ, CTA). File luôn `<meta charset="UTF-8">`. Ghi file encoding utf-8. (Lỗi cũ: từng strip dấu — KHÔNG lặp lại.)
+2. **Mọi prompt ảnh = TIẾNG ANH, chi tiết** theo công thức Nano Banana Pro 2 (xem `references/image-prompt-formula-EN.md`): scene + subject + composition + lighting + lens + color palette + mood + aspect ratio + "use attached product reference, keep packaging/label" + negative.
+3. **Brand Visual DNA**: 1 đoạn prompt tiếng Anh mô tả phong cách hình ảnh thương hiệu (palette, lighting, mood, photographic style). Đoạn này được (a) nối vào CUỐI mọi prompt ảnh để mỗi ô tự đủ, và (b) hiển thị ở 1 hộp "Brand Visual DNA" đầu trang (HTML comment + box) để user dán vào ô "Add to every prompt" của LP-Image-Studio.
+4. **Mỗi ô ảnh là `<figure class="media" style="aspect-ratio:R">` chứa `<button class="pcopy" data-p="FULL_ENGLISH_PROMPT">`** → để LP-Image-Studio quét tự động.
+5. **Chuyển đổi cao**: ≥20 section đa định dạng, ≥6 CTA, sticky CTA, countdown, social proof, form COD ≤5 trường, FAQ, guarantee, pixel.
+
+## Quy trình 5 bước
+
+### Bước 1 — Intake (điền CONFIG)
+Mở `scripts/build_lp.py`, sửa khối `CONFIG` ở đầu (hoặc tạo file JSON riêng):
+- `brand`, `product`, `offer` (giá gốc/giá KM/quà), `currency`, `pixel_id`, `hotline`, `company`
+- `brand_dna_en` — Brand Visual DNA tiếng Anh (palette hex, lighting, mood, photographic style, subject demographic)
+- `angles[]` — mỗi angle: `slug, title, acc, acc2, ey, h1(html, CÓ DẤU), sub, pains[3], stitle, slead, proof, testi[3], case, ft, fs, angle_type` + tham số ảnh `subj, setting, surface` (mô tả tiếng Anh để ghép vào prompt)
+Mỗi ngành hàng = 1 CONFIG. Có thể tạo 1 hoặc 100 angle.
+
+### Bước 2 — Generate
+Chạy: `python3 scripts/build_lp.py` → xuất `out/<slug>.html` cho từng angle + `out/index.html`. Mỗi trang: copy VN có dấu, prompt ảnh tiếng Anh + Brand DNA, form COD→Sheet, pixel.
+
+### Bước 3 — Tạo ảnh hàng loạt (LP-Image-Studio)
+1. Deploy `tools/LP-Image-Studio.html` lên 1 origin https (Cloudflare Pages/Netlify/Live Server) — KHÔNG mở file:// (chặn CORS).
+2. Dán Gemini API key (aistudio.google.com/apikey), model `gemini-3-pro-image-preview`.
+3. Upload 1 file `.html` → tool quét hết ô ảnh + prompt tiếng Anh.
+4. Upload 1–5 ảnh sản phẩm thật (nền sạch, rõ nhãn). Dán Brand Visual DNA vào ô "Add to every prompt".
+5. Bấm "Tạo toàn bộ ảnh" → review → "Tạo lại" ô nào chưa ưng.
+6. "Tải ZIP" → `index.html` (đã thay ô ảnh bằng `<img>` chuẩn SEO: alt, loading=lazy, aspect-ratio) + `assets/*.jpg`.
+
+### Bước 4 — Nối form COD → Google Sheet + Pixel
+- Tạo Google Sheet → Extensions → Apps Script → dán `assets/appsscript-Code.gs` → Deploy Web App (Anyone) → copy URL.
+- Trong mỗi HTML, set `var SHEET_ENDPOINT="<url>";` (có thể sed hàng loạt).
+- Pixel đã gắn sẵn (sửa `pixel_id` trong CONFIG). Submit form fire `Lead`.
+
+### Bước 5 — Deploy Cloudflare Pages
+Giải nén ZIP → `wrangler pages deploy . --project-name=<ten-project>` → URL `*.pages.dev`. Verify domain trong Meta Business Manager để pixel/AEM chuẩn. Gán từng URL làm đích nhóm quảng cáo (A/B đa angle).
+
+## Section library (đa định dạng — xem references/section-library.md)
+Hero · Press strip · Pain cards · Full-bleed quote · Solution · Mechanism + pH/feature bar · Scent/variant tabs · Benefits grid · How-to 3-step timeline · Before/After · Stat counters · Case study sâu · Testimonial carousel · Video · UGC grid · Comparison table · Founder note · Value+Gift · Countdown · COD form · Guarantee · FAQ accordion · Final CTA.
+
+## Tiêu chí "đạt" trước khi giao
+- [ ] Copy VN đủ dấu, không lỗi font.
+- [ ] Mọi `data-p` là prompt tiếng Anh chi tiết + có Brand DNA + "use product reference".
+- [ ] ≥20 section, ≥6 CTA, sticky CTA, countdown, FAQ, guarantee.
+- [ ] Form COD ≤5 trường, fire Lead, POST tới SHEET_ENDPOINT.
+- [ ] Pixel PageView + ViewContent + Lead.
+- [ ] Mobile-first, animation reveal/counter mượt.
+- [ ] LP-Image-Studio quét đúng số ô ảnh.
+
+## Files
+- `scripts/build_lp.py` — generator config-driven (sample: ONIIZ combo, 10 angle, VN có dấu, prompt EN).
+- `tools/LP-Image-Studio.html` — tool tạo ảnh hàng loạt + ZIP.
+- `references/image-prompt-formula-EN.md` — công thức prompt tiếng Anh + template Brand Visual DNA.
+- `references/section-library.md` — thư viện section + khi nào dùng.
+- `references/deploy-and-tracking.md` — Cloudflare deploy + Google Sheet + Pixel.
+- `assets/appsscript-Code.gs` — Web App nhận đơn COD về Sheet.
+
+---
+
+## CẬP NHẬT v3 (bundle mới)
+
+Skill nay kèm thêm:
+- **tools/LP-Factory-Studio.html (v3)** — tool all-in-one: nhập ý tưởng/script → AI viết copy đa ngôn ngữ theo brand guideline (upload PDF/DOCX/TXT/MD) + mục tiêu chiến dịch + tệp khách hàng → tạo ảnh hàng loạt (model ảnh chọn được, mặc định Nano Banana Flash; text mặc định gemini-2.5-pro, có nút liệt kê model) → editor sửa copy/ảnh từng section + carousel video KOC → preview → tải DEPLOY KIT (site/ + deploy.bat/.sh).
+- **lp-ops/** — LP Ops Agent toolkit: tracking snippet (fbc/fbp/ttclid/ttp/ip/ua/event_id + UTM + lp_id), Apps Script unified Sheet (dedup event_id), n8n dual-CAPI (Meta + TikTok) workflow, policy-generator Nghị định 13, deploy CF + Vercel, UTM Link Builder, Winner Dashboard.
+- **LP-Deploy-Agent-Prompt.md** — system prompt cho con agent nhận link ZIP → audit → deploy Cloudflare/Vercel → hướng dẫn custom domain.
+
+### INVARIANTS bổ sung (áp dụng khi build LP):
+- Copy tiếng Việt CÓ DẤU; mọi prompt ảnh tiếng ANH; KHÔNG hiện hộp Brand DNA trên trang; hero/agitate/before là ảnh kể chuyện cảm xúc KHÔNG sản phẩm.
+- Tracking chuẩn: pixel chỉ ở frontend, token CAPI ở backend (n8n/webhook); pixel + CAPI chung event_id để dedup.
+- Mỗi LP gắn lp_id + UTM capture → đổ về 1 Google Sheet trung tâm để tìm winner.
+- Mỗi LP kèm 3 trang chính sách Nghị định 13 (dùng lp-ops/4-policy-generator.py).
+
+### ROADMAP chưa làm (Phase 2/3):
+- Phase 2: nhúng thẳng CAPI snippet + lp_id + auto-policy vào generator build_lp.py / renderer LP Factory Studio.
+- Phase 3: thư viện multi-template (Shopee/TikTok Shop/Coolmate/long-form), bộ SVG icon inline, Design System Extractor.
+
+---
+
+## CẬP NHẬT v4 (production-hardened — đúc rút từ deploy thực chiến 25 LP)
+
+Xem chi tiết + code snippet trong `references/production-playbook.md`. Tóm tắt invariants BẮT BUỘC mới:
+
+1. **Lead capture không được rỗng.** Endpoint đưa về `site/lead-config.js` dùng chung (`window.__LEAD_ENDPOINT__`); LP đọc `var SHEET_ENDPOINT=(window.__LEAD_ENDPOINT__||"")`. Kiểm tra `SHEET_ENDPOINT=""` trước khi deploy = lỗi mất đơn #1.
+2. **Apps Script Sheet phải do CHÍNH account chạy Web App sở hữu** (dùng `SpreadsheetApp.create()` trong `setup()`), nếu không sẽ lỗi "You do not have permission" và rớt đơn. Web app: Execute as Me + Anyone; đổi code thì Deploy → New version (URL /exec giữ nguyên).
+3. **Tracking đầy đủ:** PageView + ViewContent + **Lead + Purchase** (mỗi event 1 event_id dedup) + ttq + gtag, **kèm value = đơn giá × số lượng**, value cũng ghi vào Sheet. Helper `__ORDERVAL`/`__fireConv` (xem playbook §3).
+4. **Không để placeholder rỗng** ở khối Câu chuyện thương hiệu / Nhà sáng lập / Cam kết — fill từ Brand Guideline; founder name cấu hình được. Footer pháp lý đầy đủ (tên cty, địa chỉ, hotline, email, MST/GPKD) cho Nghị định 13 + Meta duyệt.
+5. **KOC video section** (carousel TikTok embed 9/16) + **UGC grid** là chuẩn.
+6. **Animation an toàn:** section reveal fade-up qua IntersectionObserver với `body.lpx` + fallback chống ẩn trắng trang + `prefers-reduced-motion`; icon động (`lpfloat`) + pulse CTA/shield (playbook §6).
+7. **Deploy nhiều bộ LP** gộp 1 project, phân nhóm theo PATH (`/insight-1/<slug>/`), 1 subdomain. Luôn dùng URL production `*.pages.dev` (URL preview có hash bị lỗi SSL). LP nằm sâu → dùng link tuyệt đối `/privacy.html`.
+
+### Tiêu chí "đạt" bổ sung v4
+- [ ] lead-config.js có endpoint thật; Sheet đúng owner; test 1 đơn đổ về Sheet.
+- [ ] Pixel bắn Lead + Purchase + value + eventID (Meta) + ttq + gtag.
+- [ ] 0 placeholder `>""</p>`; đủ 3 khối brand + footer pháp lý.
+- [ ] Có KOC video + UGC + animation reveal + icon động (kèm fallback).
+
+## CẬP NHẬT v5 (tool render Storytelling Image-Led)
+`tools/LP-Factory-Studio.html` nâng cấp render LP sang **kể chuyện ảnh-dẫn full-bleed, mobile-first**: header sticky + marquee, các màn hero/agitate/solution/before-after/story là ảnh full-bleed có text overlay (scrim), scent-strip 3 ảnh, reveal-on-scroll, footer công ty. Tracking: PageView + ViewContent + **Lead + Purchase + value** (event_id dedup) sẵn CAPI. Pipeline gen ảnh (key chạy local trong trình duyệt) + editor + DEPLOY KIT giữ nguyên.
+
+## CẬP NHẬT v6 (Input Pack ingest — nhiều insight → nhiều LP cùng lúc)
+`tools/LP-Factory-Studio.html` thêm **dropzone Upload INPUT PACK (.html)** — nhận file chiến lược từ agent insight (schema: 1 khối DÙNG CHUNG brand/giá/pixel/goal/Brand-DNA + N khối LP, mỗi LP có *insight/script win + thông điệp + chân dung khách*). Parser tự fill toàn bộ config dùng chung + nạp N insight → bước "AI thiết kế" sinh **đúng 1 LP/insight, giữ nguyên hook/insight/message/audience**, rồi gen ảnh + DEPLOY KIT như cũ → phát triển nhiều LP cho nhiều insight trong 1 lần. Cũng hỗ trợ upload brand guideline PDF/DOCX/TXT/MD.
