@@ -98,6 +98,9 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   </div>
   <label>👥 Tệp khách hàng / công chúng mục tiêu (tuổi, giới, nghề, lối sống, nỗi đau, bối cảnh)</label>
   <textarea id="audience" style="min-height:54px" placeholder="VD: Nam 22-32, nhân viên văn phòng & gym-goer thành thị, quan tâm vẻ ngoài và sự tự tin khi hẹn hò, ngại mùi cơ thể cuối ngày..."></textarea>
+  <div class="row">
+    <div><label>🎨 Giao diện (skin) — đổi phong cách để A/B test nhanh</label><select id="skin"><option value="default">Mặc định — Storytelling tối (accent theo AI)</option><option value="shopee">Shopee — cam</option><option value="tiktok">TikTok — cyan/magenta</option><option value="royal">Royal — xanh tím premium</option></select></div>
+  </div>
   <label>Brand guideline — nhập text HOẶC upload file (PDF / DOCX / TXT / MD)</label>
   <textarea id="guide" style="min-height:54px" placeholder="Tone, màu chủ đạo, do/don't... (hoặc upload file bên dưới để tự trích nội dung vào đây)"></textarea>
   <div class="drop" id="dropGuide" style="margin-top:6px">📄 Upload brand guideline (PDF / DOCX / TXT / MD) — tự trích nội dung</div>
@@ -115,6 +118,8 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
     <div><label>Ảnh brand guideline (logo/màu — tuỳ chọn)</label><div class="drop" id="dropBrand">＋ ảnh brand</div><input type="file" id="fileBrand" accept="image/*" multiple hidden></div>
   </div>
   <div id="refPrev" style="margin-top:8px"></div>
+  <button class="sec" onclick="extractPalette()" style="margin-top:8px;padding:8px 12px;font-size:13px">🎨 Trích bảng màu thương hiệu từ ảnh brand → Brand DNA</button>
+  <div id="swatches" style="margin-top:8px"></div>
   <div class="row" style="margin-top:8px"><div><label>Số ảnh song song (Tier 3 → 8–12)</label><input type="number" id="conc" value="8" min="1" max="24" style="max-width:120px"></div></div>
   <button class="big" id="genImg" onclick="buildAll()" disabled style="margin-top:6px">⚡ Tạo ảnh + Build toàn bộ Landing Page</button>
   <div class="bar"><i id="prog2"></i></div><div id="st2" class="muted"></div>
@@ -143,6 +148,33 @@ function wireUp(dropId,inpId,tag){const d=$('#'+dropId),i=$('#'+inpId);d.onclick
  function add(fs){[...fs].slice(0,5).forEach(f=>{const r=new FileReader();r.onload=()=>{REF.push({mime:f.type||'image/jpeg',data:r.result.split(',')[1],url:r.result,tag});renderRef();};r.readAsDataURL(f);});}}
 function renderRef(){$('#refPrev').innerHTML=REF.map((p,i)=>`<span style="display:inline-block;position:relative;margin:0 6px 6px 0"><img src="${p.url}" style="height:54px;border-radius:8px;border:1px solid var(--line)"><span style="position:absolute;top:-6px;right:-6px;background:var(--bad);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;text-align:center;cursor:pointer;line-height:18px" onclick="REF.splice(${i},1);renderRef()">✕</span><div style="font-size:9px;color:var(--mut);text-align:center">${p.tag}</div></span>`).join('');}
 wireUp('dropProd','fileProd','product'); wireUp('dropBrand','fileBrand','brand');
+function extractPalette(){
+  var ref=REF.find(function(r){return r.tag==='brand';})||REF.find(function(r){return r.tag==='product';})||REF[0];
+  if(!ref){alert('Hãy upload ít nhất 1 ảnh brand (hoặc ảnh sản phẩm) ở trên trước.');return;}
+  var img=new Image();
+  img.onload=function(){
+    var W=64,H=Math.max(1,Math.round(W*img.naturalHeight/(img.naturalWidth||1)));
+    var c=document.createElement('canvas');c.width=W;c.height=H;var ctx=c.getContext('2d');ctx.drawImage(img,0,0,W,H);
+    var d;try{d=ctx.getImageData(0,0,W,H).data;}catch(e){alert('Không đọc được pixel ảnh.');return;}
+    var buckets={};
+    for(var i=0;i<d.length;i+=4){var al=d[i+3];if(al<128)continue;var r=d[i],g=d[i+1],b=d[i+2];
+      var mx=Math.max(r,g,b),mn=Math.min(r,g,b),lum=(mx+mn)/2;
+      if(lum>242||lum<13)continue;
+      var key=(r>>5)+'-'+(g>>5)+'-'+(b>>5);var o=buckets[key]||(buckets[key]={r:0,g:0,b:0,n:0,sat:0});
+      o.r+=r;o.g+=g;o.b+=b;o.n++;o.sat+=(mx-mn);}
+    var arr=Object.keys(buckets).map(function(k){var o=buckets[k];return{r:Math.round(o.r/o.n),g:Math.round(o.g/o.n),b:Math.round(o.b/o.n),n:o.n,sat:o.sat/o.n};});
+    if(!arr.length){alert('Ảnh quá đơn sắc — không trích được màu.');return;}
+    function hex(o){return '#'+[o.r,o.g,o.b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('');}
+    var byCount=arr.slice().sort(function(a,b){return b.n-a.n;}).slice(0,6);
+    var bySat=arr.slice().sort(function(a,b){return b.sat-a.sat;});
+    var palette=byCount.map(hex),acc=hex(bySat[0]||byCount[0]),acc2=hex(bySat[1]||byCount[1]||byCount[0]);
+    $('#swatches').innerHTML='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="muted" style="font-size:12px">Palette:</span>'+palette.map(function(h){return '<span title="'+h+'" style="display:inline-block;width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:'+h+'"></span>';}).join('')+'<span class="muted" style="font-size:11px">→ accent '+acc+' · '+acc2+' (đã thêm vào Brand DNA)</span></div>';
+    var dnaLine='BRAND VISUAL DNA: brand palette '+palette.join(', ')+' (primary accent '+acc+', secondary '+acc2+'); premium cinematic photoreal product photography, consistent color grade and lighting matching this palette across all images, clean negative space.';
+    var box=$('#dna');box.value=box.value.trim()?(box.value.trim()+'\n'+dnaLine):dnaLine;
+  };
+  img.onerror=function(){alert('Không tải được ảnh.');};
+  img.src=ref.url;
+}
 try{if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}catch(e){}
 (function(){var d=$('#dropGuide'),i=$('#fileGuide');if(!d)return;d.onclick=()=>i.click();['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--acc)'}));['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.style.borderColor='var(--line)'}));d.addEventListener('drop',ev=>parseGuide(ev.dataTransfer.files[0]));i.addEventListener('change',()=>parseGuide(i.files[0]));})();
 async function parseGuide(file){if(!file)return;const stt=$('#guideStatus');stt.textContent='Đang trích: '+file.name+'...';const ext=(file.name.split('.').pop()||'').toLowerCase();let txt='';try{
@@ -199,7 +231,7 @@ const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',t
 
 // ---- STEP1 AI configs ----
 async function genConfigs(){
-  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
+  CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),skin:($('#skin')&&$('#skin').value)||'default',n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
   if($('#remember').checked)try{localStorage.setItem('lpf_key',CFG.key)}catch(_){}
   if(!CFG.key){alert('Nhập API key');return;}
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
@@ -259,6 +291,21 @@ function videoEmbeds(links){const arr=(links||'').split(/[\n,]+/).map(s=>s.trim(
 // ---- render LP (srcOf: key -> img src) ----
 function L(k,fb){return (UI[k]&&String(UI[k]).trim())||fb;}
 function curISO(x){x=(x||'').toLowerCase();if(/đ|vnd|₫/.test(x))return'VND';if(/\$|usd/.test(x))return'USD';if(/฿|thb|baht/.test(x))return'THB';if(/rp|idr/.test(x))return'IDR';if(/rm|myr/.test(x))return'MYR';if(/₱|php|peso/.test(x))return'PHP';if(/¥|cny|rmb|元/.test(x))return'CNY';return'VND';}
+function skinTokens(skin,acc,acc2){
+  var base={bg:'#0b0d11',s1:'#13171e',s2:'#1b212b',line:'#262d39',acc:acc||'#19c3c9',acc2:acc2||'#ff7a4e'};
+  if(skin==='shopee')return Object.assign(base,{acc:'#ee4d2d',acc2:'#ff7337'});
+  if(skin==='tiktok')return Object.assign(base,{bg:'#0a0a0a',s1:'#141414',s2:'#1e1e1e',line:'#2a2a2a',acc:'#25f4ee',acc2:'#fe2c55'});
+  if(skin==='royal')return Object.assign(base,{bg:'#0a0e1a',s1:'#121830',s2:'#1a2340',line:'#2a335a',acc:'#7c5cff',acc2:'#37c0ff'});
+  return base; // default: keep AI per-angle accents on the storytelling dark surfaces
+}
+const ICONS={
+ truck:'<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7"/><circle cx="5.5" cy="18.5" r="1.8"/><circle cx="18.5" cy="18.5" r="1.8"/>',
+ cash:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/>',
+ ret:'<polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/>',
+ lock:'<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>'
+};
+function svgi(n){return '<svg class="ic-svg" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';}
 function renderLP(lp,srcOf){
   const a=lp.a,C=CFG,acc=a.acc||'#19c3c9',acc2=a.acc2||'#ff7a4e',CUR=curISO(C.curr);
   const S=(k,r)=>srcOf(k)||'';
@@ -272,7 +319,8 @@ function renderLP(lp,srcOf){
   const reasons=(UI.reasons||['','','','']);const emo=['💧','⚖️','🍸','✨'];const cs=a.case||{};
   const vids=videoEmbeds(lp.videos);
   const vidsec=vids?`<section class="band"><span class="eyebrow">${L('sec_video','Review thật từ KOC')}</span><h2>${L('sec_video','Review thật từ KOC')}</h2><div class="vcaro">${vids}</div></section>`:'';
-  const css=LPCSS.replace(/__ACC__/g,acc).replace(/__ACC2__/g,acc2);
+  const SK=skinTokens(C.skin,acc,acc2);
+  const css=LPCSS.replace(/__BG__/g,SK.bg).replace(/__S1__/g,SK.s1).replace(/__S2__/g,SK.s2).replace(/__LINE__/g,SK.line).replace(/__ACC__/g,SK.acc).replace(/__ACC2__/g,SK.acc2);
   return `<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${esc((a.h1||'').replace(/<[^>]+>/g,''))} | ${esc(C.brand)}</title><meta name="description" content="${esc((a.sub||'').slice(0,150))}"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800;900&display=swap" rel="stylesheet"><style>${css}</style></head><body>
 <div class="hd"><div class="logo">${esc(C.brand)}</div><a href="#order" class="hcta">${esc(L('cta','ĐẶT NGAY'))}</a></div>
 <div class="marq"><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span><span>${esc(L('marquee','🚚 COD · FREESHIP · TOP 1'))}&nbsp;&nbsp;•&nbsp;&nbsp;💸 ${esc(C.psave)}&nbsp;&nbsp;•&nbsp;&nbsp;</span></div>
@@ -289,8 +337,8 @@ ${scene('product','1/1',esc(L('sec_solution','Giải pháp')), esc(a.stitle||'')
 ${vidsec}
 ${scene('after','1/1',esc(L('sec_story','Câu chuyện thật')), esc(cs.n||'')+(cs.m?', '+esc(cs.m):''), '"'+esc(cs.q||'')+'"','bottom')}
 <section class="band center"><span class="eyebrow">${L('urgency_h','Ưu đãi có hạn')}</span><h2>${L('urgency_h','Ưu đãi có hạn')}</h2><div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>Tiết kiệm</span><span class="save">${esc(C.psave)}</span></div></div></section>
-<section id="order" class="band"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required inputmode="tel"><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button><div class="trust"><span>🚚 Free ship</span><span>💵 COD</span><span>↩️ Đổi trả 7 ngày</span><span>🔒 Bảo mật</span></div></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
-<section class="band"><div class="guar"><div class="ic">🛡️</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
+<section id="order" class="band"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required inputmode="tel"><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button><div class="trust"><span>${svgi('truck')} Free ship</span><span>${svgi('cash')} COD</span><span>${svgi('ret')} Đổi trả 7 ngày</span><span>${svgi('lock')} Bảo mật</span></div></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
+<section class="band"><div class="guar"><div class="ic">${svgi('shield')}</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
 <section class="band"><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
 ${scene('hero','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
 <section class="band center"><a href="#order" class="btn" style="max-width:420px">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
@@ -346,7 +394,7 @@ zip.file('README.txt',['== DEPLOY '+LPS.length+' LANDING PAGE LEN CLOUDFLARE =='
 dl(await zip.generateAsync({type:'blob'}),(CFG.brand||'lp')+'-DEPLOY-KIT.zip');}
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
 
-const LPCSS=`:root{--bg:#0b0d11;--s1:#13171e;--s2:#1b212b;--ink:#f3f6fa;--mut:#98a2b2;--acc:__ACC__;--acc2:__ACC2__;--line:#262d39;--ok:#46d6a8}
+const LPCSS=`:root{--bg:__BG__;--s1:__S1__;--s2:__S2__;--ink:#f3f6fa;--mut:#98a2b2;--acc:__ACC__;--acc2:__ACC2__;--line:__LINE__;--ok:#46d6a8}
 *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.62;padding-bottom:76px}
 .wrap{max-width:560px;margin:0 auto}section{padding:36px 18px}h1{font-size:31px;font-weight:900;line-height:1.18}h2{font-size:23px;font-weight:800}
 .eyebrow{color:var(--acc);font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;display:inline-block;margin-bottom:8px}
@@ -401,6 +449,8 @@ section.band{max-width:620px;margin:0 auto;padding:40px 18px}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
 @media(min-width:780px){.scene{min-height:680px}.scent-strip img{height:520px}.split img{height:560px}}
 @media(min-width:980px){.sticky{display:none}}
+.ic-svg{width:1.05em;height:1.05em;vertical-align:-.16em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline-block}
+.trust .ic-svg{color:var(--acc)}.guar .ic .ic-svg{width:30px;height:30px;color:var(--ok)}
 `;
 
 const LPRUNTIME=`var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){if(x.target.dataset&&x.target.dataset.count){cup(x.target);}else{x.target.classList.add('in');}io.unobserve(x.target);}})},{threshold:.15});
