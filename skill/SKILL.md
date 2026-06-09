@@ -205,4 +205,9 @@ Root cause (debug): `preview()` render LP bằng **iframe `srcdoc`** → documen
 ## CẬP NHẬT v24 (học spotless.vn: ảnh product-cinematic + ít chữ, có điều khiển) ✅
 - **Chọn phong cách ảnh AI** (`CFG.imgStyle`): `product` (sản phẩm cinematic, không người — mặc định, kiểu spotless hero), `balance` (non-prod=người thật / prod=sản phẩm), `people` (UGC người thật như cũ). `P()` đổi prompt theo style: product→"Premium cinematic PRODUCT photography...no people", bỏ AUDIENCE/PEOPLE/ethnicity-negative khi không có người; balance/people giữ casting người thật theo thị trường. Người thật vẫn ở UGC upload + review (như spotless).
 - **Mật độ chữ** (`CFG.compactText`, mặc định compact): `.lpapp.compact` thu nhỏ thêm `.cap` h1/h2/p + clamp 3 dòng → chữ trên ảnh < ~20%, để ảnh dẫn dắt. Toggle được trong editor (render-time).
-- 2 select mới ở Bước 1 (Phong cách ảnh / Mật độ chữ). Verify: node --check + test P() 3 style + compact class/CSS + editor + regression. (Gợi ý học thêm từ spotless: bảng so sánh "vs nhãn khác" — chưa làm.)
+- 2 select mới ở Bước 1 (Phong cách ảnh / Mật độ chữ). Verify: node --check + test P() 3 style + compact class/CSS + editor + regression. (Gợi ý học thêm từ spotless: bảng so sánh "vs nhãn khác" — đã làm ở v25.)
+
+## CẬP NHẬT v25 (fix hero rối + bảng so sánh đối thủ) ✅
+- **Hero dễ đọc hơn**: `.cap h1 .hl` trước dùng gradient `background-clip:text;color:transparent` → trên ảnh nền bị xỉn/đè như bóng ma → nay **trắng + gạch chân accent** (đặt sau `.hero h1 .hl` nên thắng specificity). **Eyebrow sinh theo `${CFG.lang}`** (trước ép tiếng Anh). `.hero .scrim` gradient đáy đậm hơn; **giá → trắng + shadow** (trước teal chìm nền).
+- **Bảng so sánh "vs nhãn khác"**: schema `compare{title,headus,headthem,rows[{label,us,them}]}`; `genConfigs` đọc `data.compare` + default ONIIZ. Render bảng 3 cột (tiêu chí | mình ✓ | đối thủ ✕) trước phần đánh giá; `.cmptbl`. Chỉnh ở editor "⚔️ Bảng so sánh đối thủ".
+- Verify: node --check + hero hl/scrim/price + compare render+editor + regression.
