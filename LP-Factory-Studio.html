@@ -57,7 +57,11 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
 
 <div class="card"><h2><span class="step">1</span> Ý tưởng · Thị trường · Sản phẩm · Brand</h2>
   <label>Ý tưởng / kịch bản win (insight)</label>
-  <textarea id="idea" placeholder="Dán script TikTok đã viral / insight nỗi đau khách hàng..."></textarea>
+  <textarea id="idea" placeholder="Dán script TikTok đã viral / insight nỗi đau khách hàng...">HOOK: Cuối ngày tự ti vì mùi cơ thể — nhất là trước buổi hẹn hoặc sau khi tập gym.
+DEMO: cận cảnh texture bọt, hơi the mát, 3 mùi cho 3 mood (đi làm / đi gym / đi chơi). Nhấn "dễ dùng + cảm giác đã".
+USP: Mùi hương cocktail đa tầng, hương liệu thiên nhiên từ Anh Quốc — sạch thơm cả ngày, giúp nàng thấy cuốn hơn.
+TRẤN AN: tiện mang theo, freeship, COD kiểm tra hàng.
+CTA: Bắt đầu routine 30 giây — Combo 3 mùi 429k (tiết kiệm 168k), đặt ngay.</textarea>
   <div class="drop" id="dropPack" style="margin-top:6px;border-color:var(--acc)">📥 Upload INPUT PACK (.html chiến lược từ agent insight) → tự fill config + sinh nhiều LP cho nhiều insight cùng lúc</div>
   <input type="file" id="filePack" accept=".html,.htm,text/html" hidden>
   <div id="packStatus" class="muted" style="margin-top:4px"></div>
@@ -67,8 +71,8 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
     <div><label>Đơn vị tiền / Số angle</label><div class="row"><input id="curr" value="đ" style="max-width:70px"><input type="number" id="nangle" value="6" min="1" max="20"></div></div>
   </div>
   <div class="row">
-    <div><label>Thương hiệu</label><input id="brand" value="ONIIZ"></div>
-    <div><label>Sản phẩm</label><input id="product" value="Combo 3 Bọt Vệ Sinh Nam ONIIZ (Beachy, Juicy, Milky)"></div>
+    <div><label>Thương hiệu</label><input id="brand" value="ONIIZ — The Masculine Lab"></div>
+    <div><label>Sản phẩm</label><input id="product" value="Combo 3 Bọt Vệ Sinh Nam ONIIZ — 3 mùi: Peachy (đào cam sả), Juicy (trái cây nhiệt đới), Milky (gỗ sữa ấm)"></div>
   </div>
   <div class="row">
     <div><label>Giá gốc</label><input id="pold" value="597.000đ"></div>
@@ -84,25 +88,25 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
   </div>
   <label style="margin-top:6px">🏢 Thông tin doanh nghiệp — cho footer + 3 trang chính sách Nghị định 13 (Meta/TikTok duyệt ads)</label>
   <div class="row">
-    <div><label>Tên pháp lý / công ty</label><input id="company" placeholder="VD: Công ty TNHH ONIIZ Việt Nam"></div>
-    <div><label>Email</label><input id="cemail" placeholder="cskh@oniiz.vn"></div>
+    <div><label>Tên pháp lý / công ty</label><input id="company" value="Công ty TNHH Deman" placeholder="VD: Công ty TNHH ONIIZ Việt Nam"></div>
+    <div><label>Email</label><input id="cemail" value="contact@oniiz.com" placeholder="cskh@oniiz.vn"></div>
   </div>
   <div class="row">
-    <div><label>Hotline</label><input id="hotline" placeholder="0900 000 000"></div>
-    <div><label>Địa chỉ</label><input id="address" placeholder="Số nhà, đường, quận, TP"></div>
-    <div><label>MST / GPKD</label><input id="mst" placeholder="0xxxxxxxxx"></div>
+    <div><label>Hotline</label><input id="hotline" value="092 39 39 338" placeholder="0900 000 000"></div>
+    <div><label>Địa chỉ</label><input id="address" value="B-TT07-09, khu nhà ở Ngân Hà Vạn Phúc, Phường Vạn Phúc, Hà Đông, Hà Nội" placeholder="Số nhà, đường, quận, TP"></div>
+    <div><label>MST / GPKD</label><input id="mst" value="0109087760" placeholder="0xxxxxxxxx"></div>
   </div>
   <div class="row">
-    <div><label>🎬 Link video sản phẩm (YouTube) — nhúng 16/9 vào trang</label><input id="pvideo" placeholder="https://youtu.be/... (để trống = không có video sản phẩm)"></div>
+    <div><label>🎬 Link video sản phẩm (YouTube) — nhúng 16/9 vào trang</label><input id="pvideo" value="https://www.youtube.com/watch?v=9ts_95qzJTs" placeholder="https://youtu.be/... (để trống = không có video sản phẩm)"></div>
     <div><label>🤖 APIFY API token (tuỳ chọn — để cào video TikTok)</label><input id="apify" type="password" placeholder="apify_api_..."></div>
-    <div><label># Hashtag cào TikTok (mặc định = thương hiệu)</label><input id="tthashtag" placeholder="vd: oniiz masculinelab"></div>
+    <div><label># Hashtag cào TikTok (mặc định = thương hiệu)</label><input id="tthashtag" value="oniiz, masculinefoam" placeholder="vd: oniiz masculinelab"></div>
   </div>
   <div class="row">
     <div><label>🎯 Mục tiêu chiến dịch</label><select id="goal"><option>Bán hàng / thu đơn COD</option><option>Thu lead (form/điện thoại)</option><option>Ra mắt sản phẩm mới</option><option>Tăng nhận diện thương hiệu</option><option>Remarketing / chốt khách cũ</option><option>Đẩy ưu đãi / flash sale</option></select></div>
-    <div><label>Thông điệp truyền thông chính</label><input id="msg" placeholder="VD: Tự tin từ bên trong — sạch thơm cả ngày"></div>
+    <div><label>Thông điệp truyền thông chính</label><input id="msg" value="Tự tin từ bên trong - sạch thơm cả ngày" placeholder="VD: Tự tin từ bên trong — sạch thơm cả ngày"></div>
   </div>
   <label>👥 Tệp khách hàng / công chúng mục tiêu (tuổi, giới, nghề, lối sống, nỗi đau, bối cảnh)</label>
-  <textarea id="audience" style="min-height:54px" placeholder="VD: Nam 22-32, nhân viên văn phòng & gym-goer thành thị, quan tâm vẻ ngoài và sự tự tin khi hẹn hò, ngại mùi cơ thể cuối ngày..."></textarea>
+  <textarea id="audience" style="min-height:54px" placeholder="VD: Nam 22-32, nhân viên văn phòng & gym-goer thành thị...">Nam 22–35, nhân viên văn phòng và gym-goer thành thị, quan tâm vẻ ngoài và sự tự tin khi hẹn hò, ngại mùi cơ thể cuối ngày, thích sản phẩm gọn nhẹ dễ mang theo.</textarea>
   <div class="row">
     <div><label>🎨 Giao diện (skin) — đổi phong cách để A/B test nhanh</label><select id="skin"><option value="default">Mặc định — Storytelling tối (accent theo AI)</option><option value="shopee">Shopee — cam</option><option value="tiktok">TikTok — cyan/magenta</option><option value="royal">Royal — xanh tím premium</option></select></div>
   </div>
@@ -311,6 +315,7 @@ function videoEmbeds(links){const arr=(links||'').split(/[\n,]+/).map(s=>s.trim(
 
 // ---- render LP (srcOf: key -> img src) ----
 function L(k,fb){return (UI[k]&&String(UI[k]).trim())||fb;}
+function hdr(eb,head){eb=(eb==null?'':String(eb)).trim();head=(head==null?'':String(head)).trim();var dup=eb&&head&&eb.replace(/\s+/g,' ').toLowerCase()===head.replace(/\s+/g,' ').toLowerCase();return (eb&&!dup?'<span class="eyebrow">'+eb+'</span>':'')+(head?'<h2>'+head+'</h2>':'');}
 function curISO(x){x=(x||'').toLowerCase();if(/đ|vnd|₫/.test(x))return'VND';if(/\$|usd/.test(x))return'USD';if(/฿|thb|baht/.test(x))return'THB';if(/rp|idr/.test(x))return'IDR';if(/rm|myr/.test(x))return'MYR';if(/₱|php|peso/.test(x))return'PHP';if(/¥|cny|rmb|元/.test(x))return'CNY';return'VND';}
 function skinTokens(skin,acc,acc2){
   var base={bg:'#0b0d11',s1:'#13171e',s2:'#1b212b',line:'#262d39',acc:acc||'#19c3c9',acc2:acc2||'#ff7a4e'};
@@ -397,14 +402,14 @@ ${scene('product','4/5',esc(L('sec_solution','Giải pháp')), esc(a.stitle||'')
 ${USP&&(USP.title||USP.lead)?`<section class="scene reveal">${S('usp','4/5')?`<img src="${S('usp','4/5')}" loading="lazy" alt="${esc(USP.title||'usp')}">`:`<div class="noimg">usp</div>`}<div class="scrim"></div><div class="cap center">${USP.badge?`<span class="eb">${esc(USP.badge)}</span>`:''}<h2>${esc(USP.title||'')}</h2>${USP.lead?`<p>${esc(USP.lead)}</p>`:''}</div></section>`:''}
 ${SC.length?`<section class="band center" style="padding-bottom:6px"><span class="eyebrow">${esc((UI.sec_choose)||'Tầng hương')}</span><h2>Khám phá từng tầng hương</h2><p class="mut">👆 Chạm vào mỗi hương để xem câu chuyện mùi hương</p></section>
 ${SC.map((s,i)=>`<section class="scene reveal scent-scene" onclick="openScent(${i})">${s.img?`<img src="${s.img}" loading="lazy" alt="${esc(s.name||('scent'+(i+1)))}">`:`<div class="noimg">scent ${i+1}</div>`}<div class="scrim"></div><div class="cap bottom"><span class="eb">Tầng hương ${i+1}</span><h2>${esc(s.name||'')}</h2>${s.payoff?`<p>“${esc(s.payoff)}”</p>`:''}<span class="scent-cta">Xem câu chuyện hương ›</span></div></section>`).join('')}`:`<section class="scent-strip">${['scent1','scent2','scent3'].map((k,i)=>`<figure><img src="${S(k,'4/5')}" loading="lazy" onerror="this.style.opacity=.15"><figcaption>${esc(reasons[i]||['Juicy','Beachy','Milky'][i])}</figcaption></figure>`).join('')}</section>`}
-<section id="features" class="band"><span class="eyebrow">${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</span><h2>${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</h2><div class="bgrid">${reasons.map((r,i)=>`<div class="ben"><div class="e">${emo[i]||'✔'}</div><b>${esc(r)}</b></div>`).join('')}</div></section>
+<section id="features" class="band">${hdr(L('sec_reasons','Vì sao chọn')+' '+esc(C.brand), L('sec_reasons','Vì sao chọn')+' '+esc(C.brand))}<div class="bgrid">${reasons.map((r,i)=>`<div class="ben"><div class="e">${emo[i]||'✔'}</div><b>${esc(r)}</b></div>`).join('')}</div></section>
 ${scene('before','4/5','TRƯỚC', esc(L('before','Trước khi dùng')), '', 'bottom')}${scene('after','4/5','SAU', esc(L('after','Sau khi dùng')), '', 'bottom')}
 <section class="band"><div class="stats"><div class="stat"><div class="n" data-count="400000" data-suf="+">0</div><div class="l">khách</div></div><div class="stat"><div class="n" data-count="12000" data-suf="+">0</div><div class="l">★ review</div></div><div class="stat"><div class="n" data-count="98" data-suf="%">0</div><div class="l">hài lòng</div></div></div></section>
-<section id="reviews" class="band"><span class="eyebrow">${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</span><h2>${esc(a.proof||L('sec_proof_fallback','Khách nói gì'))}</h2><div class="rate"><div class="sc">4.9</div><div class="stars">★★★★★</div></div><div class="caro">${testi}</div>${C.pvideo?`<div class="sp"></div>${ytEmbed(C.pvideo)}`:''}${ugc?`<div class="sp"></div><div class="ugc-caro">${ugc}</div>`:''}</section>
+<section id="reviews" class="band">${hdr(L('sec_proof_fallback','Khách nói gì'), esc(a.proof||L('sec_proof_fallback','Khách nói gì')))}<div class="rate"><div class="sc">4.9</div><div class="stars">★★★★★</div></div><div class="caro">${testi}</div>${C.pvideo?`<div class="sp"></div>${ytEmbed(C.pvideo)}`:''}${ugc?`<div class="sp"></div><div class="ugc-caro">${ugc}</div>`:''}</section>
 ${vidsec}
 ${scene('closing','4/5',esc(L('sec_story','Câu chuyện thật')), esc(cs.n||'')+(cs.m?', '+esc(cs.m):''), '"'+esc(cs.q||'')+'"','bottom')}
-<section id="offer" class="band center"><span class="eyebrow">${L('urgency_h','Ưu đãi có hạn')}</span><h2>${L('urgency_h','Ưu đãi có hạn')}</h2><div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>Tiết kiệm</span><span class="save">${esc(C.psave)}</span></div></div></section>
-<section id="order" class="band"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required inputmode="tel"><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button><div class="trust"><span>${svgi('truck')} Free ship</span><span>${svgi('cash')} COD</span><span>${svgi('ret')} Đổi trả 7 ngày</span><span>${svgi('lock')} Bảo mật</span></div></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
+<section id="offer" class="band center">${hdr(L('urgency_h','Ưu đãi có hạn'), L('urgency_h','Ưu đãi có hạn'))}<div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>Tiết kiệm</span><span class="save">${esc(C.psave)}</span></div></div></section>
+<section id="order" class="band">${hdr('Đặt hàng COD', L('order_h','Để lại thông tin — shop gọi trong 15 phút'))}<form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required inputmode="tel"><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button><div class="trust"><span>${svgi('truck')} Free ship</span><span>${svgi('cash')} COD</span><span>${svgi('ret')} Đổi trả 7 ngày</span><span>${svgi('lock')} Bảo mật</span></div></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
 <section class="band"><div class="guar"><div class="ic">${svgi('shield')}</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
 <section id="faq" class="band"><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
 ${scene('hero','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
