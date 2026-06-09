@@ -240,7 +240,7 @@ function AUDIENCE(){return CFG.audienceVisual?("TARGET AUDIENCE shown in image: 
 function PRODREF(){return "Use the attached reference image(s): keep the exact product packaging/label/logo; follow the brand visual identity.";}
 function P(scene,ratio,withprod){return scene+". Authentic real-life photo that looks like a genuine candid moment captured on a modern smartphone by an ordinary person — natural everyday setting, natural available daylight, true-to-life skin tones and textures, unposed and slightly imperfect, relatable real people (NOT professional models), documentary/UGC realism, believable everyday environment with normal real-world details. Aspect ratio "+ratio+", vertical for mobile landing page, leave clean negative space for text overlay. "+(withprod?(PRODREF()+" "):"Do NOT show any product/bottle/packaging/logo — a pure real-life lifestyle moment. ")+BRANDDNA()+" "+AUDIENCE()+"Negative: no glossy studio or commercial gloss, no overproduced advertising look, no fashion-model perfection, no fake plastic skin, no heavy retouching, no on-image text, no watermark, no distorted hands, no other brand logos, no NSFW.";}
 
-const SLOTDEFS=[['hero','4/5',false],['agitate','16/9',false],['product','1/1',true],['scent1','4/5',true],['scent2','4/5',true],['scent3','4/5',true],['before','1/1',false],['after','1/1',true]];
+const SLOTDEFS=[['hero','4/5',false],['agitate','4/5',false],['product','4/5',true],['scent1','4/5',true],['scent2','4/5',true],['scent3','4/5',true],['before','1/1',false],['after','1/1',true],['closing','4/5',false]];
 
 // ---- STEP1 AI configs ----
 async function genConfigs(){
@@ -250,7 +250,7 @@ async function genConfigs(){
   $('#genCfg').disabled=true;$('#prog1').style.width='35%';$('#st1').textContent='AI đang viết copy '+CFG.lang+' + thiết kế '+CFG.n+' angle...';
   const sys=`You are a senior DTC direct-response strategist + art director. Create ${CFG.n} DISTINCT high-converting landing-page angles, each a different insight/pain. ALL customer-facing copy MUST be written in ${CFG.lang} with correct spelling/diacritics/script. Analyze ALL inputs (language/market, brand, product, brand guideline, CAMPAIGN GOAL, KEY MESSAGE and TARGET AUDIENCE) and design copy AND image scenes that fit the campaign goal and resonate with the target audience. Return ONLY valid JSON:
 {"dna":"<Brand Visual DNA in ENGLISH>","audience_visual":"<short ENGLISH casting note: who appears in the images — age range, gender, look/ethnicity if relevant, setting, lifestyle, emotional vibe — matching the TARGET AUDIENCE and CAMPAIGN GOAL>","ui":{"cta":"","order_h":"","form_name":"","form_phone":"","form_address":"","form_qty":"","form_btn":"","thanks_h":"","thanks_p":"","sec_solution":"","sec_choose":"","sec_reasons":"","sec_story":"","sec_proof_fallback":"","sec_video":"","before":"","after":"","urgency_h":"","guarantee":"","marquee":"","reasons":["r1","r2","r3","r4"],"faqs":[{"q":"","a":""},{"q":"","a":""},{"q":"","a":""},{"q":"","a":""}]},"angles":[{...}]}
-ui = localized UI labels in ${CFG.lang}. angles[i]: slug(en-kebab), ey(short eyebrow EN), h1(${CFG.lang}, may contain one <span class='hl'>...</span>), sub(${CFG.lang}), pains(3 strings ${CFG.lang}, may use <b>), agitq(${CFG.lang} 1 emotional line), stitle(${CFG.lang}), slead(${CFG.lang}), proof(${CFG.lang}), testi(3 objects {q ${CFG.lang}, n name, a "age, city"}), case({q ${CFG.lang}, n, m "age, city", r "short result ${CFG.lang}"}), ft(${CFG.lang}), fs(${CFG.lang}), acc(hex), acc2(hex), images:{hero,agitate,product,scent1,scent2,scent3,before,after} each = a concise ENGLISH real-life candid SCENE (no lighting/lens boilerplate) that DEPICTS THE TARGET AUDIENCE PERSONA and reflects the CAMPAIGN GOAL/MESSAGE (who is in frame, their age/look, setting, emotion). hero/agitate/before = emotional storytelling with NO product; product/scent*/after = with product. Copy must hit the insight hard, hook-first (not product-first). Diversify angles. If PROVIDED WINNING INSIGHTS are supplied in the user message, output EXACTLY one angle per provided insight block, in order, and PRESERVE each hook/insight/key message/target audience (do not invent different ones) — only expand them into a full landing page.`;
+ui = localized UI labels in ${CFG.lang}. angles[i]: slug(en-kebab), ey(short eyebrow EN), h1(${CFG.lang}, may contain one <span class='hl'>...</span>), sub(${CFG.lang}), pains(3 strings ${CFG.lang}, may use <b>), agitq(${CFG.lang} 1 emotional line), stitle(${CFG.lang}), slead(${CFG.lang}), proof(${CFG.lang}), testi(3 objects {q ${CFG.lang}, n name, a "age, city"}), case({q ${CFG.lang}, n, m "age, city", r "short result ${CFG.lang}"}), ft(${CFG.lang}), fs(${CFG.lang}), acc(hex), acc2(hex), images:{hero,agitate,product,scent1,scent2,scent3,before,after,closing} each = a concise ENGLISH real-life candid SCENE (closing = an uplifting, warm real-life "after/result" moment showing the happy outcome, NO product) (no lighting/lens boilerplate) that DEPICTS THE TARGET AUDIENCE PERSONA and reflects the CAMPAIGN GOAL/MESSAGE (who is in frame, their age/look, setting, emotion). hero/agitate/before = emotional storytelling with NO product; product/scent*/after = with product. Copy must hit the insight hard, hook-first (not product-first). Diversify angles. If PROVIDED WINNING INSIGHTS are supplied in the user message, output EXACTLY one angle per provided insight block, in order, and PRESERVE each hook/insight/key message/target audience (do not invent different ones) — only expand them into a full landing page.`;
   const user=`PRODUCT: ${CFG.product}. Price ${CFG.pold} -> ${CFG.pnew} (save ${CFG.psave}). Brand ${CFG.brand}. Currency ${CFG.curr}.\nCAMPAIGN GOAL: ${CFG.goal}. KEY MESSAGE: ${CFG.msg||"(infer a strong one)"}. TARGET AUDIENCE: ${CFG.audience||"(infer from product)"}.
 ${CFG.guide? "BRAND GUIDELINE: "+CFG.guide : ""}
 ${CFG.dna? "BRAND DNA given: "+CFG.dna : "Create a fitting Brand Visual DNA."}
@@ -320,29 +320,46 @@ const ICONS={
 };
 function svgi(n){return '<svg class="ic-svg" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';}
 function ytEmbed(u){if(!u)return '';u=(''+u).trim();var y=ytId(u);if(y)return '<div class="pvid"><iframe src="https://www.youtube.com/embed/'+y+'" title="Video sản phẩm" loading="lazy" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>';var t=ttId(u);if(t)return '<div class="pvid"><iframe src="https://www.tiktok.com/embed/v2/'+t+'" title="Video sản phẩm" loading="lazy" allowfullscreen></iframe></div>';return '';}
-function lpKeyword(lp){var a=lp.a;var prod=(CFG.product||'').split(/[,(]/)[0].trim().split(/\s+/).slice(0,4).join(' ');var h=(a.h1||'').replace(/<[^>]+>/g,'').replace(/[.!?,]/g,'').split(/\s+/).slice(0,4).join(' ');var kw=(prod+' '+h).trim();return kw||CFG.product||CFG.brand||'review';}
+function lpKeyword(lp){var a=lp.a;var prod=(CFG.product||'').split(/[,(\-–]/)[0].trim().split(/\s+/).slice(0,4).join(' ');var h=(a.h1||'').replace(/<[^>]+>/g,'').replace(/[.!?,"']/g,'').split(/\s+/).slice(0,3).join(' ');var kw=(prod+' '+h).trim();return kw||CFG.product||CFG.brand||'review';}
+async function apifyReq(url,opts){var r=await fetch(url,opts||{});var t=await r.text();var j;try{j=t?JSON.parse(t):{};}catch(e){j={_raw:t};}if(!r.ok){var m=(j&&j.error&&j.error.message)||j._raw||('HTTP '+r.status);throw new Error('HTTP '+r.status+': '+String(m).slice(0,180));}return j;}
+async function scrapeOne(token,kw,onstatus){
+  var A='https://api.apify.com/v2',tok='token='+encodeURIComponent(token);
+  var input={searchQueries:[kw],searchSection:'/video',resultsPerPage:10,videoSearchSorting:'MOST_RELEVANT'};
+  var run=await apifyReq(A+'/acts/clockworks~tiktok-scraper/runs?'+tok,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+  var id=run.data.id,dsId=run.data.defaultDatasetId,status=run.data.status,msg='',t0=Date.now(),n=0;
+  while(status==='READY'||status==='RUNNING'){
+    await new Promise(function(rs){setTimeout(rs,3000);});
+    var st=await apifyReq(A+'/actor-runs/'+id+'?'+tok);
+    status=st.data.status;dsId=st.data.defaultDatasetId||dsId;msg=st.data.statusMessage||msg;
+    if(onstatus)onstatus(status,Math.round((Date.now()-t0)/1000),msg);
+    if(++n>120)throw new Error('quá lâu (>6 phút) — đã dừng chờ');
+  }
+  if(status!=='SUCCEEDED')throw new Error('run '+status+(msg?(' — '+msg):''));
+  var items=await apifyReq(A+'/datasets/'+dsId+'/items?'+tok+'&clean=true&limit=12');
+  var seen={},out=[];(items||[]).forEach(function(it){var u=it.webVideoUrl||it.videoUrl||it.postPage||'';if(u&&!seen[u]){seen[u]=1;out.push(u);}});
+  return out.slice(0,10);
+}
 async function scrapeTikTok(){
   if(!CFG||!LPS.length){alert('Hãy bấm "AI thiết kế Landing Page" trước.');return;}
-  var token=(CFG.apify)||($('#apify')&&$('#apify').value.trim());
+  var token=(CFG&&CFG.apify)||($('#apify')&&$('#apify').value.trim());
   if(!token){alert('Nhập APIFY API token ở Bước 1 (ô "APIFY API token") trước.');return;}
   var btn=$('#scrapeTt'),st=$('#scrapeStatus');if(btn)btn.disabled=true;
-  var okCount=0;
+  var ok=0,fail=0,lastErr='';
   for(var i=0;i<LPS.length;i++){
-    var lp=LPS[i],kw=lpKeyword(lp);
-    if(st)st.textContent='Đang cào TikTok ['+(i+1)+'/'+LPS.length+']: "'+kw+'" (mỗi LP ~30–90s)...';
+    var kw=lpKeyword(LPS[i]);
+    if(st)st.innerHTML='Cào TikTok ['+(i+1)+'/'+LPS.length+'] "'+kw+'" — khởi tạo run...';
     try{
-      var url='https://api.apify.com/v2/acts/clockworks~tiktok-scraper/run-sync-get-dataset-items?token='+encodeURIComponent(token)+'&maxItems=10';
-      var body={searchQueries:[kw],resultsPerPage:10,shouldDownloadVideos:false,shouldDownloadCovers:false,shouldDownloadSubtitles:false,proxyConfiguration:{useApifyProxy:true}};
-      var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(!res.ok){var tx=await res.text();throw new Error('HTTP '+res.status+' '+tx.slice(0,140));}
-      var items=await res.json();
-      var links=(items||[]).map(function(it){return it.webVideoUrl||it.videoUrl||it.submittedVideoUrl||'';}).filter(Boolean).slice(0,10);
-      lp.videos=links.join('\n');okCount++;
+      var onst=(function(i,kw){return function(status,sec,msg){if(st)st.innerHTML='Cào TikTok ['+(i+1)+'/'+LPS.length+'] "'+kw+'" — '+status+' '+sec+'s'+(msg?(' · '+String(msg).slice(0,80)):'');};})(i,kw);
+      var links=await scrapeOne(token,kw,onst);
+      LPS[i].videos=links.join('\n');ok++;
       var stt=$('#lpst'+i);if(stt)stt.textContent='TikTok: '+links.length+' video';
-      var ta=document.getElementById('ed_videos_'+i);if(ta)ta.value=lp.videos;
-    }catch(e){if(st)st.innerHTML='<span style="color:var(--bad)">LP '+(i+1)+' lỗi: '+(e.message||e)+' — kiểm tra token/credit APIFY hoặc CORS.</span>';}
+      var ta=document.getElementById('ed_videos_'+i);if(ta)ta.value=LPS[i].videos;
+    }catch(e){fail++;lastErr=(e&&e.message)||String(e);var stt2=$('#lpst'+i);if(stt2)stt2.textContent='TikTok lỗi';}
   }
-  if(st)st.innerHTML='<span style="color:var(--acc)">✓ Đã cào xong '+okCount+'/'+LPS.length+' LP. Bấm Preview/Tải để áp dụng video vào trang (không cần tạo lại ảnh).</span>';
+  if(st){
+    if(ok>0)st.innerHTML='<span style="color:var(--acc)">✓ Cào xong '+ok+'/'+LPS.length+' LP'+(fail?(' ('+fail+' lỗi)'):'')+'. Bấm Preview/Tải để áp dụng (không cần tạo lại ảnh).</span>'+(fail?('<br><span style="color:var(--bad)">Lỗi gần nhất: '+lastErr+'</span>'):'');
+    else st.innerHTML='<span style="color:var(--bad)">✗ Không cào được LP nào. Lỗi: '+lastErr+'<br>Kiểm tra: token đúng? Tài khoản APIFY còn credit/đang trial actor <b>clockworks/tiktok-scraper</b>? (Actor tính phí — vào apify.com → Store → mở actor → Start free trial.)</span>';
+  }
   if(btn)btn.disabled=false;
 }
 function renderLP(lp,srcOf){
@@ -366,7 +383,7 @@ function renderLP(lp,srcOf){
 ${heroScene()}
 <section class="band"><div style="max-width:620px;margin:0 auto">${pains}</div></section>
 ${scene('agitate','16/9','', '"'+esc(a.agitq||'')+'"','', 'center')}
-${scene('product','1/1',esc(L('sec_solution','Giải pháp')), esc(a.stitle||''), esc(a.slead||''),'bottom')}
+${scene('product','4/5',esc(L('sec_solution','Giải pháp')), esc(a.stitle||''), '','bottom')}${a.slead?`<section class="band center"><p style="font-size:16.5px;color:#e7ecf3;max-width:560px;margin:0 auto">${esc(a.slead)}</p></section>`:''}
 <section class="band center"><a href="#order" class="btn ghost" style="max-width:420px">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
 <section class="scent-strip">${['scent1','scent2','scent3'].map((k,i)=>`<figure><img src="${S(k,'4/5')}" loading="lazy" onerror="this.style.opacity=.15"><figcaption>${esc((reasons[i]||['Juicy','Beachy','Milky'][i]))}</figcaption></figure>`).join('')}</section>
 <section id="features" class="band"><span class="eyebrow">${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</span><h2>${L('sec_reasons','Vì sao chọn')} ${esc(C.brand)}</h2><div class="bgrid">${reasons.map((r,i)=>`<div class="ben"><div class="e">${emo[i]||'✔'}</div><b>${esc(r)}</b></div>`).join('')}</div></section>
@@ -379,7 +396,7 @@ ${scene('after','1/1',esc(L('sec_story','Câu chuyện thật')), esc(cs.n||'')+
 <section id="order" class="band"><span class="eyebrow">${L('order_h','Đặt hàng COD')}</span><h2>${L('order_h','Để lại thông tin — shop gọi trong 15 phút')}</h2><form class="form" style="margin-top:14px" id="codForm"><label>${L('form_name','Họ tên')} *</label><input name="name" required><label>${L('form_phone','Số điện thoại')} *</label><input name="phone" required inputmode="tel"><label>${L('form_address','Địa chỉ')} *</label><input name="address" required><label>${L('form_qty','Số lượng')}</label><select name="qty"><option>1 (${esc(C.pnew)})</option><option>2</option><option>3</option></select><div class="sp"></div><button class="btn" type="submit">${esc(L('form_btn','ĐẶT NGAY — COD'))}</button><div class="trust"><span>${svgi('truck')} Free ship</span><span>${svgi('cash')} COD</span><span>${svgi('ret')} Đổi trả 7 ngày</span><span>${svgi('lock')} Bảo mật</span></div></form><div class="thanks" id="thanks"><div class="big">✅</div><h2>${L('thanks_h','Đặt hàng thành công!')}</h2><p class="mut">${L('thanks_p','Shop gọi xác nhận trong 15 phút.')}</p></div></section>
 <section class="band"><div class="guar"><div class="ic">${svgi('shield')}</div><div>${esc(L('guarantee','COD toàn quốc — kiểm tra hàng trước khi thanh toán.'))}</div></div></section>
 <section id="faq" class="band"><h2>FAQ</h2><div class="sp"></div>${faqs}</section>
-${scene('hero','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
+${scene('closing','4/5','', esc(a.ft||''), esc(a.fs||''),'bottom')}
 <section class="band center"><a href="#order" class="btn" style="max-width:420px">${esc(L('cta','ĐẶT NGAY'))} →</a></section>
 <div class="foot"><b>${esc(C.company||C.brand)}</b><br><span class="mut">${[C.hotline?('📞 '+esc(C.hotline)):'',C.cemail?('✉️ '+esc(C.cemail)):'',C.address?('📍 '+esc(C.address)):'',C.mst?('MST: '+esc(C.mst)):''].filter(Boolean).join(' · ')||'📞 Hotline · ✉️ email · Địa chỉ · MST'}</span><br><span class="mut" style="--lk:#8aa0c0"><a href="./chinh-sach-bao-mat.html" style="color:#8aa0c0;text-decoration:underline">Chính sách bảo mật</a> · <a href="./dieu-khoan-su-dung.html" style="color:#8aa0c0;text-decoration:underline">Điều khoản sử dụng</a> · <a href="./chinh-sach-thanh-toan.html" style="color:#8aa0c0;text-decoration:underline">Chính sách thanh toán</a></span><br><span class="mut">© 2026 ${esc(C.brand)}</span></div>
 <div class="sticky"><div class="p"><b>${esc(C.pnew)}</b> <s>${esc(C.pold)}</s></div><a href="#order" class="btn">${esc(L('cta','ĐẶT NGAY'))} →</a></div>
