@@ -30,7 +30,18 @@ All work lives in the single self-contained `LP-Factory-Studio.html` (static, de
 - Editor: Ad Pack group in `edExtras()` (edit 5 sets + per-set regen + thumbnail).
 - LP grid card: `🎯 Ảnh ad` (genAdImages) and `📢 Ad Pack` (previewAds) buttons + `#lpadst{i}` status.
 
+## Update — reuse LP images for ad creatives (same day)
+Per user: instead of always paying to generate dedicated ad images, let the user **pick up to 10 images from the LP's own library** (section images + uploaded UGC + any AI ad images) — each picked image becomes a separate ad creative, auto-paired with one of the 5 copy sets (cycled), copy changeable per creative. Keeps emotional continuity with the LP and avoids extra API cost. The AI "generate dedicated ad image" path is kept (hybrid).
+
+- New `lp.adCreatives[]` = `{imgRef, copyIdx}`. `imgRef` namespaces: `lp:<slotKey>`, `ugc:<i>`, `ai:<adKey>`.
+- `lpImagePool(lp)` builds the picker grid; `pickAdImages`/`_adPickToggle`/`confirmAdPicks` (max 10) manage selection.
+- `resolveCreativeSrc` (data URL for preview/standalone) + `resolveCreativePath` (ZIP path) resolve a ref. ZIP files already exist: `assets/<key>.jpg` (LP), `assets/ugc-N.jpg`, `ad-images/ad-N.jpg` (AI).
+- `previewAds` renders creatives when present (each card: image + copy-set `<select>` + remove), else falls back to the 5 copy sets. `creativeCard` + shared `fbAdHTML`/`copyBox` builders.
+- `genAdImages` seeds `adCreatives` from freshly generated AI images if empty. `adsJson` + `downloadAdPack` emit creatives when present (with `copy_set`), else the 5-set fallback.
+- Editor ad group gains a **📌 Chọn ảnh LP** button.
+
 ## Verification
 - `node --check` on the extracted app script: pass.
 - Logic harness (stubbed globals): buildAdSlots/AP/adDomain/adImgSrc/adCard/adCardStatic/adsJson/adImagesToZip/downloadAdPack all produce correct output; ad-image filenames map `ad0→ad-1.jpg`; `ads.json` image is `null` until generated.
 - Existing suite: 50/50 pass.
+- Creative-mode harness (12 checks): lpImagePool / resolveCreativeSrc / resolveCreativePath (lp/ugc/ai) / creativeCard / adsJson with creatives (copy_set + correct image paths) / fallback / downloadAdPack / confirmAdPicks DOM-order — all pass. `node --check` re-confirmed.

@@ -306,7 +306,7 @@ WINNING IDEA/SCRIPT:\n${$('#idea').value.trim()||'(empty — infer from product)
     CFG.stats=[{count:400000,suf:'+',dec:0,val:'',label:'khách hàng'},{count:12000,suf:'+',dec:0,val:'',label:'★ đánh giá'},{count:98,suf:'%',dec:0,val:'',label:'hài lòng'}];
     CFG.trustBadges=['An toàn cho da nhạy cảm','Không gây kích ứng','Cân bằng pH tự nhiên','Kiểm nghiệm da liễu'];CFG.countdownHours=22;
     if(!CFG.compare)CFG.compare={title:(CFG.brand||'ONIIZ')+' vs sản phẩm thường',headus:(CFG.brand||'ONIIZ'),headthem:'Sản phẩm thường',rows:[{label:'An toàn da nhạy cảm',us:'Cân bằng pH, không kích ứng',them:'Dễ gây khô rát, kích ứng'},{label:'Khử mùi',us:'Sạch thơm khô thoáng đến 24h',them:'Chỉ che mùi tạm thời'},{label:'Thành phần',us:'Dịu nhẹ, kiểm nghiệm da liễu',them:'Hương liệu/cồn mạnh'},{label:'Dành riêng cho nam',us:'Chuyên biệt vùng kín nam giới',them:'Dùng chung, không tối ưu'},{label:'Cam kết',us:'Đổi trả 7 ngày · COD tận nhà',them:'Không rõ ràng'}]};
-    LPS=ANGLES.map(a=>({a,videos:'',b64:{},slots:buildSlots(a),adB64:{},adSlots:buildAdSlots(a)}));
+    LPS=ANGLES.map(a=>({a,videos:'',b64:{},slots:buildSlots(a),adB64:{},adSlots:buildAdSlots(a),adCreatives:[]}));
     var _seed=(($('#seedvideos')&&$('#seedvideos').value)||'').split(/[\n,]+/).map(function(s){return s.trim();}).filter(Boolean);
     if(_seed.length){var _per=Math.max(3,Math.min(8,Math.ceil(_seed.length/Math.max(1,LPS.length))));LPS.forEach(function(lp,i){var out=[],start=(i*_per)%_seed.length;for(var j=0;j<_seed.length&&out.length<_per;j++){var u=_seed[(start+j)%_seed.length];if(out.indexOf(u)<0)out.push(u);}lp.videos=out.join('\n');});}
     $('#prog1').style.width='100%';$('#st1').innerHTML=`<b style="color:var(--acc)">Đã thiết kế ${ANGLES.length} LP (${CFG.lang}).</b> Sang bước 2 tạo ảnh.`;
@@ -492,7 +492,7 @@ function uploadGift(i,j,input){var f=input.files&&input.files[0];if(!f||!CFG.bun
 window.uploadGift=uploadGift;
 function edExtras(i){var a=LPS[i].a,h='';
  h+='<div class="edg" style="padding:10px 12px"><label class="eddef"><input type="checkbox" '+(CFG.compactText?'checked':'')+' onchange="CFG.compactText=this.checked"> ✍️ Ít chữ trên ảnh (compact) — bấm Preview để xem</label></div>';
- var ads=(a.ads||[]);if(ads.length){h+=_g('📢 Ad Pack — 5 bộ quảng cáo Meta/TikTok ('+ads.length+')',ads.map(function(ad,j){var src=(LPS[i].adB64&&LPS[i].adB64['ad'+j])?('data:image/jpeg;base64,'+LPS[i].adB64['ad'+j]):'';return '<div class="edrow"><div style="font-weight:800;font-size:12px;color:var(--acc);margin:4px 8px">Bộ '+(j+1)+(ad.concept?' · '+esc(ad.concept):'')+'</div>'+_ta(ad.primary,'LPS['+i+'].a.ads['+j+'].primary','Primary text (nội dung chính)',60)+_in(ad.headline,'LPS['+i+'].a.ads['+j+'].headline','Headline (≤40 ký tự)')+_in(ad.desc,'LPS['+i+'].a.ads['+j+'].desc','Description (≤30 ký tự)')+'<div class="row">'+_in(ad.cta,'LPS['+i+'].a.ads['+j+'].cta','Nút CTA (vd Mua ngay)')+_in(ad.cta_meta,'LPS['+i+'].a.ads['+j+'].cta_meta','CTA Meta (SHOP_NOW...)')+'</div>'+_ta(ad.image,'LPS['+i+'].a.ads['+j+'].image','Mô tả ảnh ad (tiếng Anh)',46)+'<div class="row" style="align-items:center;gap:8px;margin:5px 8px">'+(src?'<img src="'+src+'" style="height:64px;width:51px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">':'<span class="muted" style="font-size:11px">chưa có ảnh</span>')+'<button class="sec" onclick="regenAd('+i+','+j+',this)" style="flex:1">🎯 Tạo lại ảnh bộ này</button></div></div>';}).join('')+'<div class="row" style="margin:6px 8px;gap:6px"><button class="sec" onclick="genAdImages('+i+')" style="flex:1">🎯 Tạo cả 5 ảnh ad</button><button class="sec" onclick="previewAds('+i+')" style="flex:1">📢 Preview Ad Pack</button></div>',true);}
+ var ads=(a.ads||[]);if(ads.length){h+=_g('📢 Ad Pack — 5 bộ quảng cáo Meta/TikTok ('+ads.length+')',ads.map(function(ad,j){var src=(LPS[i].adB64&&LPS[i].adB64['ad'+j])?('data:image/jpeg;base64,'+LPS[i].adB64['ad'+j]):'';return '<div class="edrow"><div style="font-weight:800;font-size:12px;color:var(--acc);margin:4px 8px">Bộ '+(j+1)+(ad.concept?' · '+esc(ad.concept):'')+'</div>'+_ta(ad.primary,'LPS['+i+'].a.ads['+j+'].primary','Primary text (nội dung chính)',60)+_in(ad.headline,'LPS['+i+'].a.ads['+j+'].headline','Headline (≤40 ký tự)')+_in(ad.desc,'LPS['+i+'].a.ads['+j+'].desc','Description (≤30 ký tự)')+'<div class="row">'+_in(ad.cta,'LPS['+i+'].a.ads['+j+'].cta','Nút CTA (vd Mua ngay)')+_in(ad.cta_meta,'LPS['+i+'].a.ads['+j+'].cta_meta','CTA Meta (SHOP_NOW...)')+'</div>'+_ta(ad.image,'LPS['+i+'].a.ads['+j+'].image','Mô tả ảnh ad (tiếng Anh)',46)+'<div class="row" style="align-items:center;gap:8px;margin:5px 8px">'+(src?'<img src="'+src+'" style="height:64px;width:51px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">':'<span class="muted" style="font-size:11px">chưa có ảnh</span>')+'<button class="sec" onclick="regenAd('+i+','+j+',this)" style="flex:1">🎯 Tạo lại ảnh bộ này</button></div></div>';}).join('')+'<div class="row" style="margin:6px 8px;gap:6px;flex-wrap:wrap"><button class="sec" onclick="pickAdImages('+i+')" style="flex:1;min-width:110px">📌 Chọn ảnh LP</button><button class="sec" onclick="genAdImages('+i+')" style="flex:1;min-width:110px">🎯 Tạo ảnh AI</button><button class="sec" onclick="previewAds('+i+')" style="flex:1;min-width:110px">📢 Preview</button></div>',true);}
  h+=_g('😖 Nỗi đau (pains)',(a.pains||[]).map(function(p,j){return _ta(p,'LPS['+i+'].a.pains['+j+']','Nỗi đau '+(j+1),46);}).join(''));
  var tv=(a.testi||[]);h+=_g('⭐ Đánh giá khách ('+tv.length+')',tv.map(function(t,j){return '<div class="edrow">'+_in(t.n,'LPS['+i+'].a.testi['+j+'].n','Tên')+_in(t.a,'LPS['+i+'].a.testi['+j+'].a','Tuổi, nghề/nơi')+_ta(t.q,'LPS['+i+'].a.testi['+j+'].q','Nội dung review',46)+'<button class="sec edx" onclick="LPS['+i+'].a.testi.splice('+j+',1);openEditor('+i+')">✕ Xoá</button></div>';}).join('')+'<button class="sec" onclick="(LPS['+i+'].a.testi=LPS['+i+'].a.testi||[]).push({n:\'\',a:\'\',q:\'\'});openEditor('+i+')">+ Thêm đánh giá</button>');
  UI.reasons=(UI.reasons||[]).map(function(r){return (typeof r==='string')?{t:r,d:''}:(r||{t:'',d:''});});var rs=UI.reasons;h+=_g('✨ Lý do chọn / lợi ích (dùng chung)',rs.map(function(r,j){return '<div class="edrow">'+_in(r.t,'UI.reasons['+j+'].t','Tiêu đề lợi ích '+(j+1))+_ta(r.d,'UI.reasons['+j+'].d','Mô tả ngắn lợi ích',46)+'<button class="sec edx" onclick="UI.reasons.splice('+j+',1);openEditor('+i+')">✕</button></div>';}).join('')+'<button class="sec" onclick="(UI.reasons=UI.reasons||[]).push({t:\'\',d:\'\'});openEditor('+i+')">+ Thêm lợi ích</button>');
@@ -525,34 +525,84 @@ function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed
 async function regen(i,k,btn){btn.disabled=true;btn.textContent='...';try{const lp=LPS[i];lp.b64[k]=await genImage(lp.slots[k].prompt,lp.slots[k].ratio);const im=$('#im_'+i+'_'+k);if(im)im.src='data:image/jpeg;base64,'+lp.b64[k];btn.textContent='✓';}catch(e){btn.textContent='lỗi';}setTimeout(()=>{btn.disabled=false;btn.textContent='Tạo lại ảnh';},1200);}
 
 // ---- AD PACK (5 Meta/TikTok ad creatives per LP) ----
-const AD_MOCKUP_CSS=".fbwrap{display:flex;flex-direction:column;gap:16px}.fbad{background:#fff;color:#050505;border:1px solid #dadde1;border-radius:10px;overflow:hidden;font-family:Helvetica,Arial,sans-serif;max-width:380px;margin:0 auto;width:100%}.fbhd{display:flex;align-items:center;gap:8px;padding:10px 12px}.fbav{width:40px;height:40px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;font-size:18px}.fbmeta{flex:1;line-height:1.25}.fbmeta b{display:block;font-size:14px;color:#050505}.fbmeta span{font-size:12px;color:#65676b}.fbdot{color:#65676b;font-size:18px}.fbtext{padding:0 12px 10px;font-size:14px;line-height:1.4;color:#050505;white-space:pre-wrap}.fbimg{background:#000;line-height:0}.fbimg img{display:block;width:100%}.fbph{aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;color:#fff;background:#3a3b3c;font-size:13px;text-align:center;padding:20px;line-height:1.4}.fbcard{display:flex;align-items:center;gap:10px;background:#f0f2f5;padding:10px 12px;border-top:1px solid #dadde1}.fbcardL{flex:1;min-width:0}.fbdomain{font-size:12px;color:#65676b;text-transform:uppercase}.fbhl{font-size:15px;font-weight:700;color:#050505;line-height:1.25}.fbdesc{font-size:13px;color:#65676b}.fbcta{flex:none;background:#e4e6eb;color:#050505;font-weight:700;font-size:13px;padding:9px 14px;border-radius:6px;white-space:nowrap;text-decoration:none}.fbactions{display:flex;justify-content:space-around;padding:8px 0;border-top:1px solid #dadde1;color:#65676b;font-size:13px;font-weight:600}.fbcopy{display:flex;gap:6px;padding:8px 12px;background:#fff;border-top:1px solid #eee;flex-wrap:wrap}.fbcopy button{flex:1;min-width:88px;padding:7px;font-size:12px;background:#1d242f;color:#eef2f7;border:1px solid #28303d;border-radius:8px;cursor:pointer;font-weight:700}.adcopybox{max-width:380px;width:100%;margin:-8px auto 0;background:#fff;border:1px solid #dadde1;border-top:0;border-radius:0 0 10px 10px;padding:10px 12px;font-size:12.5px}.adcopybox h4{margin:8px 0 3px;font-size:11px;color:#65676b;text-transform:uppercase}.adcopybox pre{white-space:pre-wrap;font-family:inherit;margin:0;color:#050505;background:#f0f2f5;padding:8px;border-radius:6px}";
+const AD_MOCKUP_CSS=".fbwrap{display:flex;flex-direction:column;gap:16px}.fbad{background:#fff;color:#050505;border:1px solid #dadde1;border-radius:10px;overflow:hidden;font-family:Helvetica,Arial,sans-serif;max-width:380px;margin:0 auto;width:100%}.fbhd{display:flex;align-items:center;gap:8px;padding:10px 12px}.fbav{width:40px;height:40px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;font-size:18px}.fbmeta{flex:1;line-height:1.25}.fbmeta b{display:block;font-size:14px;color:#050505}.fbmeta span{font-size:12px;color:#65676b}.fbdot{color:#65676b;font-size:18px}.fbtext{padding:0 12px 10px;font-size:14px;line-height:1.4;color:#050505;white-space:pre-wrap}.fbimg{background:#000;line-height:0}.fbimg img{display:block;width:100%}.fbph{aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;color:#fff;background:#3a3b3c;font-size:13px;text-align:center;padding:20px;line-height:1.4}.fbcard{display:flex;align-items:center;gap:10px;background:#f0f2f5;padding:10px 12px;border-top:1px solid #dadde1}.fbcardL{flex:1;min-width:0}.fbdomain{font-size:12px;color:#65676b;text-transform:uppercase}.fbhl{font-size:15px;font-weight:700;color:#050505;line-height:1.25}.fbdesc{font-size:13px;color:#65676b}.fbcta{flex:none;background:#e4e6eb;color:#050505;font-weight:700;font-size:13px;padding:9px 14px;border-radius:6px;white-space:nowrap;text-decoration:none}.fbactions{display:flex;justify-content:space-around;padding:8px 0;border-top:1px solid #dadde1;color:#65676b;font-size:13px;font-weight:600}.fbcopy{display:flex;gap:6px;padding:8px 12px;background:#fff;border-top:1px solid #eee;flex-wrap:wrap}.fbcopy button{flex:1;min-width:88px;padding:7px;font-size:12px;background:#1d242f;color:#eef2f7;border:1px solid #28303d;border-radius:8px;cursor:pointer;font-weight:700}.adcopybox{max-width:380px;width:100%;margin:-8px auto 0;background:#fff;border:1px solid #dadde1;border-top:0;border-radius:0 0 10px 10px;padding:10px 12px;font-size:12.5px}.adcopybox h4{margin:8px 0 3px;font-size:11px;color:#65676b;text-transform:uppercase}.adcopybox pre{white-space:pre-wrap;font-family:inherit;margin:0;color:#050505;background:#f0f2f5;padding:8px;border-radius:6px}.adpickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}.adpick{position:relative;border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;display:block}.adpick img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}.adpick span{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.adpick input{position:absolute;top:4px;left:4px;width:18px;height:18px;z-index:2;cursor:pointer}.adpick.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}";
 try{document.head.insertAdjacentHTML('beforeend','<style>'+AD_MOCKUP_CSS+'</style>');}catch(e){}
 function adRatio(){var e=$('#adratio');return (e&&e.value)||'4/5';}
 function AP(scene,ratio){return scene+". High-impact SOCIAL MEDIA AD CREATIVE for Facebook / Instagram / TikTok feed, engineered to STOP THE SCROLL on a mobile phone. Vertical mobile-first framing, aspect ratio "+ratio+", ONE bold clear focal subject, bright punchy contrast, authentic real-life feel (not stock-photo), instantly readable at small thumbnail size. Keep clean uncluttered negative space at the top or bottom for a short text overlay. "+PRODREF()+" "+BRANDDNA()+" "+AUDIENCE()+PEOPLE()+"Negative: no on-image text, no watermark, no other brand logos, no collage, no split-screen, no busy clutter, no fake plastic gloss, no distorted hands, no NSFW"+(marketPeople()?(", no people of a different ethnicity than "+marketPeople()):"")+".";}
 function buildAdSlots(a){var ads=Array.isArray(a&&a.ads)?a.ads:[];var r=adRatio();var o={};ads.slice(0,5).forEach(function(ad,j){var scene=(ad&&(ad.image||ad.concept))||'product lifestyle ad';o['ad'+j]={scene:scene,ratio:r,prompt:AP(scene,r),name:'ad-images/ad-'+(j+1)+'.jpg'};});return o;}
 function adDomain(){var s=(CFG&&CFG.sheet)||'';var m=s.match(/^https?:\/\/([^\/]+)/i);if(m&&!/script\.google|n8n|webhook/i.test(m[1]))return m[1].replace(/^www\./,'');return (slug((CFG&&CFG.brand)||'landingpage')||'landingpage')+'.pages.dev';}
 function adImgSrc(lp,k){if(lp.adB64&&lp.adB64[k])return 'data:image/jpeg;base64,'+lp.adB64[k];var fb=['product','after','hero','usp','closing'];for(var i=0;i<fb.length;i++){if(lp.b64&&lp.b64[fb[i]])return 'data:image/jpeg;base64,'+lp.b64[fb[i]];}return '';}
-function adCard(lp,ad,idx,li){
+function fbAdHTML(copy,imgSrc,foot){
   var brand=esc((CFG&&CFG.brand)||'Trang của bạn'),domain=esc(adDomain());
-  var img=adImgSrc(lp,'ad'+idx),primary=esc(ad.primary||'').replace(/\n/g,'<br>');
-  var headline=esc(ad.headline||''),desc=esc(ad.desc||''),cta=esc(ad.cta||L('cta','Mua ngay'));
+  var primary=esc(copy.primary||'').replace(/\n/g,'<br>'),headline=esc(copy.headline||''),desc=esc(copy.desc||''),cta=esc(copy.cta||L('cta','Mua ngay'));
   var av=avInitial((CFG&&CFG.brand)||'?'),avbg=avatarColor((CFG&&CFG.brand)||'?');
   return '<div class="fbad"><div class="fbhd"><div class="fbav" style="background:'+avbg+'">'+av+'</div><div class="fbmeta"><b>'+brand+'</b><span>Được tài trợ · 🌐</span></div><div class="fbdot">···</div></div>'+
     '<div class="fbtext">'+primary+'</div>'+
-    '<div class="fbimg">'+(img?'<img src="'+img+'" alt="">':'<div class="fbph">Chưa có ảnh ad riêng<br>bấm 🎯 Tạo ảnh ad</div>')+'</div>'+
+    '<div class="fbimg">'+(imgSrc?'<img src="'+imgSrc+'" alt="">':'<div class="fbph">Chưa có ảnh — 📌 chọn ảnh LP hoặc 🎯 tạo ảnh AI</div>')+'</div>'+
     '<div class="fbcard"><div class="fbcardL"><div class="fbdomain">'+domain+'</div><div class="fbhl">'+headline+'</div>'+(desc?'<div class="fbdesc">'+desc+'</div>':'')+'</div><a class="fbcta">'+cta+'</a></div>'+
     '<div class="fbactions"><span>👍 Thích</span><span>💬 Bình luận</span><span>↗ Chia sẻ</span></div>'+
-    (li!=null?'<div class="fbcopy"><button onclick="adCopy('+li+','+idx+',\'primary\',this)">📋 Primary</button><button onclick="adCopy('+li+','+idx+',\'headline\',this)">📋 Headline</button><button onclick="adCopy('+li+','+idx+',\'all\',this)">📋 Cả bộ</button></div>':'')+
-    '</div>';
+    (foot||'')+'</div>';
 }
-function adCardStatic(lp,ad,idx){
-  return adCard(lp,ad,idx,null)+'<div class="adcopybox"><h4>Primary text</h4><pre>'+esc(ad.primary||'')+'</pre><h4>Headline</h4><pre>'+esc(ad.headline||'')+'</pre>'+(ad.desc?'<h4>Description</h4><pre>'+esc(ad.desc||'')+'</pre>':'')+'<h4>CTA</h4><pre>'+esc(ad.cta||'')+(ad.cta_meta?'  ('+esc(ad.cta_meta)+')':'')+'</pre></div>';
+function copyBox(c){return '<div class="adcopybox"><h4>Primary text</h4><pre>'+esc(c.primary||'')+'</pre><h4>Headline</h4><pre>'+esc(c.headline||'')+'</pre>'+(c.desc?'<h4>Description</h4><pre>'+esc(c.desc||'')+'</pre>':'')+'<h4>CTA</h4><pre>'+esc(c.cta||'')+(c.cta_meta?'  ('+esc(c.cta_meta)+')':'')+'</pre></div>';}
+function adCard(lp,ad,idx,li){
+  var foot=(li!=null)?'<div class="fbcopy"><button onclick="adCopy('+li+','+idx+',\'primary\',this)">📋 Primary</button><button onclick="adCopy('+li+','+idx+',\'headline\',this)">📋 Headline</button><button onclick="adCopy('+li+','+idx+',\'all\',this)">📋 Cả bộ</button></div>':'';
+  return fbAdHTML(ad,adImgSrc(lp,'ad'+idx),foot);
+}
+function creativeCard(lp,cr,idx,li){
+  var a=lp.a,copy=a.ads[cr.copyIdx]||a.ads[0]||{},src=resolveCreativeSrc(lp,cr.imgRef);
+  var sel='<select onchange="setCreativeCopy('+li+','+idx+',this.value)" style="flex:1;min-width:110px;background:#1d242f;color:#eef2f7;border:1px solid #28303d;border-radius:8px;padding:6px;font-size:12px;font-weight:700">'+a.ads.map(function(ad,ci){return '<option value="'+ci+'"'+(ci===cr.copyIdx?' selected':'')+'>Copy bộ '+(ci+1)+(ad.concept?' · '+esc(ad.concept):'')+'</option>';}).join('')+'</select>';
+  var foot='<div class="fbcopy">'+sel+'<button onclick="adCopy('+li+','+cr.copyIdx+',\'all\',this)">📋 Copy</button><button onclick="removeCreative('+li+','+idx+')">✕ Bỏ</button></div>';
+  return fbAdHTML(copy,src,foot);
+}
+function adCardStatic(lp,ad,idx){return fbAdHTML(ad,adImgSrc(lp,'ad'+idx),'')+copyBox(ad);}
+function lpImagePool(lp){
+  var out=[];
+  if(lp.b64)Object.keys(lp.b64).forEach(function(k){if(lp.b64[k])out.push({ref:'lp:'+k,src:'data:image/jpeg;base64,'+lp.b64[k],label:k});});
+  (UGC||[]).forEach(function(u,i){var s=u&&(u.url||(u.b64?'data:image/jpeg;base64,'+u.b64:''));if(s)out.push({ref:'ugc:'+i,src:s,label:'UGC '+(i+1)});});
+  if(lp.adB64)Object.keys(lp.adB64).forEach(function(k){if(lp.adB64[k])out.push({ref:'ai:'+k,src:'data:image/jpeg;base64,'+lp.adB64[k],label:'AI '+((parseInt(k.slice(2))||0)+1)});});
+  return out;
+}
+function resolveCreativeSrc(lp,ref){
+  if(!ref)return '';
+  if(ref.indexOf('lp:')===0){var k=ref.slice(3);return (lp.b64&&lp.b64[k])?('data:image/jpeg;base64,'+lp.b64[k]):'';}
+  if(ref.indexOf('ugc:')===0){var u=UGC[parseInt(ref.slice(4))];return u?(u.url||(u.b64?'data:image/jpeg;base64,'+u.b64:'')):'';}
+  if(ref.indexOf('ai:')===0){var ak=ref.slice(3);return (lp.adB64&&lp.adB64[ak])?('data:image/jpeg;base64,'+lp.adB64[ak]):'';}
+  return '';
+}
+function resolveCreativePath(lp,ref){
+  if(!ref)return null;
+  if(ref.indexOf('lp:')===0){var k=ref.slice(3);return (lp.slots&&lp.slots[k]&&lp.slots[k].name)||('assets/'+slug(k)+'.jpg');}
+  if(ref.indexOf('ugc:')===0)return 'assets/ugc-'+ref.slice(4)+'.jpg';
+  if(ref.indexOf('ai:')===0){var ak=ref.slice(3);return 'ad-images/ad-'+((parseInt(ak.slice(2))||0)+1)+'.jpg';}
+  return null;
+}
+function setCreativeCopy(li,idx,v){var lp=LPS[li];if(lp.adCreatives&&lp.adCreatives[idx]){lp.adCreatives[idx].copyIdx=parseInt(v)||0;previewAds(li);}}
+function removeCreative(li,idx){var lp=LPS[li];if(lp.adCreatives){lp.adCreatives.splice(idx,1);previewAds(li);}}
+function pickAdImages(li){
+  var lp=LPS[li];if(!lp)return;var pool=lpImagePool(lp);
+  if(!pool.length){alert('Chưa có ảnh nào để chọn. Hãy Build ảnh LP (Bước 2) trước, hoặc 🎯 tạo ảnh ad AI.');return;}
+  var chosen=(lp.adCreatives||[]).map(function(c){return c.imgRef;});
+  var grid=pool.map(function(p){var on=chosen.indexOf(p.ref)>-1;return '<label class="adpick'+(on?' on':'')+'" data-ref="'+esc(p.ref)+'"><input type="checkbox" '+(on?'checked':'')+' onchange="_adPickToggle(this)"><img src="'+p.src+'"><span>'+esc(p.label)+'</span></label>';}).join('');
+  $('#modalbody').innerHTML='<h2 style="margin-bottom:4px">📌 Chọn ảnh cho Ad Pack</h2><div class="muted" style="font-size:12.5px;margin-bottom:8px">Chọn tối đa <b>10 ảnh</b> từ thư viện LP (ảnh section + UGC + ảnh AI). Mỗi ảnh = 1 quảng cáo, tự ghép copy — giữ mạch cảm xúc, khỏi tốn tiền tạo ảnh mới.</div><div id="adpickcount" class="muted" style="margin-bottom:8px;font-weight:700"></div><div class="adpickgrid">'+grid+'</div><div class="row" style="margin-top:12px;gap:8px"><button class="sec" onclick="previewAds('+li+')" style="flex:1">← Quay lại</button><button onclick="confirmAdPicks('+li+')" style="flex:1">✓ Dùng ảnh đã chọn</button></div>';
+  $('#modal').style.display='flex';_adPickUpdate();
+}
+function _adPickToggle(cb){var n=document.querySelectorAll('.adpickgrid input:checked').length;if(n>10){cb.checked=false;alert('Tối đa 10 ảnh.');}cb.parentNode.classList.toggle('on',cb.checked);_adPickUpdate();}
+function _adPickUpdate(){var n=document.querySelectorAll('.adpickgrid input:checked').length;var e=$('#adpickcount');if(e)e.textContent='Đã chọn '+n+'/10';}
+function confirmAdPicks(li){
+  var lp=LPS[li],picks=[];
+  document.querySelectorAll('.adpickgrid label').forEach(function(l){var cb=l.querySelector('input');if(cb&&cb.checked)picks.push(l.getAttribute('data-ref'));});
+  if(!picks.length){alert('Chưa chọn ảnh nào.');return;}
+  var nset=(lp.a.ads&&lp.a.ads.length)||1;
+  lp.adCreatives=picks.map(function(ref,i){return {imgRef:ref,copyIdx:i%nset};});
+  previewAds(li);
 }
 function previewAds(li){
   var lp=LPS[li];if(!lp||!lp.a.ads||!lp.a.ads.length){alert('LP này chưa có nội dung ads. Hãy chạy Bước 1 lại.');return;}
-  var hasImg=Object.keys(lp.adB64||{}).filter(function(k){return lp.adB64[k];}).length;
-  var cards=lp.a.ads.slice(0,5).map(function(ad,idx){return adCard(lp,ad,idx,li);}).join('');
-  $('#modalbody').innerHTML='<h2 style="margin-bottom:4px">📢 Ad Pack — '+esc(lp.a.slug||('lp'+li))+'</h2><div class="muted" style="margin-bottom:12px;font-size:12.5px">5 bộ Meta/TikTok ad · mockup Facebook feed. '+(hasImg?'':'<b style="color:var(--warn)">Đang dùng tạm ảnh LP</b> — bấm 🎯 để tạo ảnh ad riêng tối ưu mobile.')+'</div><div class="row" style="margin-bottom:14px;gap:8px"><button onclick="genAdImages('+li+')" class="sec" style="flex:1">🎯 Tạo 5 ảnh ad riêng</button><button onclick="downloadAdPack('+li+')" style="flex:1">⬇️ Tải Ad Pack (HTML)</button></div><div class="fbwrap">'+cards+'</div>';
+  var a=lp.a,cre=lp.adCreatives&&lp.adCreatives.length;
+  var info=cre?('📌 '+lp.adCreatives.length+' quảng cáo dùng ảnh từ LP — giữ mạch cảm xúc, không tốn thêm API.'):('5 bộ copy · mockup Facebook feed. Bấm <b>📌 Chọn ảnh từ LP</b> để gắn tối đa 10 ảnh (đỡ tốn tiền), hoặc 🎯 tạo ảnh AI riêng.');
+  var bar='<div class="row" style="margin:4px 0 14px;gap:8px;flex-wrap:wrap"><button onclick="pickAdImages('+li+')" style="flex:1;min-width:130px">📌 Chọn ảnh từ LP</button><button class="sec" onclick="genAdImages('+li+')" style="flex:1;min-width:130px">🎯 Tạo ảnh ad AI</button><button class="sec" onclick="downloadAdPack('+li+')" style="flex:1;min-width:130px">⬇️ Tải Ad Pack</button></div>';
+  var cards=cre?lp.adCreatives.map(function(c,idx){return creativeCard(lp,c,idx,li);}).join(''):a.ads.slice(0,5).map(function(ad,idx){return adCard(lp,ad,idx,li);}).join('');
+  $('#modalbody').innerHTML='<h2 style="margin-bottom:4px">📢 Ad Pack — '+esc(a.slug||('lp'+li))+'</h2><div class="muted" style="margin-bottom:4px;font-size:12.5px">'+info+'</div>'+bar+'<div class="fbwrap">'+cards+'</div>';
   $('#modal').style.display='flex';
 }
 function adCopy(li,idx,field,btn){
@@ -576,6 +626,7 @@ async function genAdImages(li){
   if(st)st.innerHTML='<b style="color:var(--acc)">✓ '+ok+'/'+total+' ảnh ad</b>';
   if(btn){btn.disabled=false;btn.textContent='🎯 Tạo lại ảnh ad';}
   var pv=$('#lpadpv'+li);if(pv)pv.disabled=false;
+  if(!lp.adCreatives||!lp.adCreatives.length){lp.adCreatives=keys.filter(function(k){return lp.adB64[k];}).map(function(k){return {imgRef:'ai:'+k,copyIdx:(parseInt(k.slice(2))||0)};});}
   if($('#modal')&&$('#modal').style.display==='flex')previewAds(li);
   if(curEdit===li)openEditor(li);
 }
@@ -589,11 +640,17 @@ async function regenAd(i,j,btn){
   try{lp.adB64['ad'+j]=await genImage(lp.adSlots['ad'+j].prompt,r);btn.textContent='✓';if(curEdit===i)openEditor(i);}catch(e){btn.textContent='lỗi';}
   setTimeout(function(){btn.disabled=false;btn.textContent='🎯 Tạo lại ảnh bộ này';},1200);
 }
-function adsJson(lp){return {brand:(CFG&&CFG.brand)||'',product:(CFG&&CFG.product)||'',landing_page:lp.a.slug||'',price:(CFG&&CFG.pnew)||'',currency:(CFG&&CFG.curr)||'',ads:(lp.a.ads||[]).map(function(ad,j){return {set:j+1,concept:ad.concept||'',primary_text:ad.primary||'',headline:ad.headline||'',description:ad.desc||'',cta:ad.cta||'',cta_meta:ad.cta_meta||'SHOP_NOW',image:(lp.adB64&&lp.adB64['ad'+j])?('ad-images/ad-'+(j+1)+'.jpg'):null};})};}
+function adsJson(lp){
+  var base={brand:(CFG&&CFG.brand)||'',product:(CFG&&CFG.product)||'',landing_page:lp.a.slug||'',price:(CFG&&CFG.pnew)||'',currency:(CFG&&CFG.curr)||''};
+  if(lp.adCreatives&&lp.adCreatives.length){base.ads=lp.adCreatives.map(function(c,j){var ad=(lp.a.ads&&lp.a.ads[c.copyIdx])||(lp.a.ads&&lp.a.ads[0])||{};return {set:j+1,copy_set:c.copyIdx+1,concept:ad.concept||'',primary_text:ad.primary||'',headline:ad.headline||'',description:ad.desc||'',cta:ad.cta||'',cta_meta:ad.cta_meta||'SHOP_NOW',image:resolveCreativePath(lp,c.imgRef)};});}
+  else{base.ads=(lp.a.ads||[]).map(function(ad,j){return {set:j+1,concept:ad.concept||'',primary_text:ad.primary||'',headline:ad.headline||'',description:ad.desc||'',cta:ad.cta||'',cta_meta:ad.cta_meta||'SHOP_NOW',image:(lp.adB64&&lp.adB64['ad'+j])?('ad-images/ad-'+(j+1)+'.jpg'):null};});}
+  return base;
+}
 function adImagesToZip(folder,lp){if(!lp.adB64)return;Object.keys(lp.adB64).forEach(function(k){if(lp.adB64[k]){var n=(parseInt(k.slice(2))||0)+1;folder.file('ad-'+n+'.jpg',lp.adB64[k],{base64:true});}});}
 function downloadAdPack(i){
   var lp=LPS[i];if(!lp||!lp.a.ads||!lp.a.ads.length){alert('Chưa có nội dung ads.');return;}
-  var cards=lp.a.ads.slice(0,5).map(function(ad,idx){return adCardStatic(lp,ad,idx);}).join('');
+  var items=(lp.adCreatives&&lp.adCreatives.length)?lp.adCreatives.map(function(c){return {copy:(lp.a.ads&&lp.a.ads[c.copyIdx])||(lp.a.ads&&lp.a.ads[0])||{},src:resolveCreativeSrc(lp,c.imgRef)};}):lp.a.ads.slice(0,5).map(function(ad,idx){return {copy:ad,src:adImgSrc(lp,'ad'+idx)};});
+  var cards=items.map(function(it){return fbAdHTML(it.copy,it.src,'')+copyBox(it.copy);}).join('');
   var html='<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ad Pack — '+esc(lp.a.slug||'')+' | '+esc((CFG&&CFG.brand)||'')+'</title><style>body{background:#e9ebee;font-family:Helvetica,Arial,sans-serif;margin:0;padding:24px 12px}h1{text-align:center;font-size:20px;color:#050505;margin:0 0 2px}.s{text-align:center;color:#65676b;font-size:13px;margin-bottom:20px}'+AD_MOCKUP_CSS+'</style></head><body><h1>📢 Ad Pack — '+esc((CFG&&CFG.brand)||'')+'</h1><div class="s">'+esc(lp.a.slug||'')+' · 5 bộ Meta/TikTok ad · '+esc((CFG&&CFG.pnew)||'')+'</div><div class="fbwrap">'+cards+'</div></body></html>';
   dl(new Blob([html],{type:'text/html'}),'adpack-'+(lp.a.slug||('lp'+i))+'.html');
 }
