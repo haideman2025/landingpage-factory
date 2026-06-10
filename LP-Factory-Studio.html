@@ -170,7 +170,7 @@ https://www.tiktok.com/@thaivublackbi149/video/7595177869219794194</textarea></d
 </div>
 
 <div class="card"><h2><span class="step">3</span> Sửa & Preview & Tải</h2>
-  <button class="big sec" id="scrapeTt" onclick="scrapeTikTok()" disabled style="margin-bottom:8px">🤖 Cào video TikTok theo insight từng LP (APIFY) → chèn 5–10 video/LP</button>
+  <div class="row" style="margin-bottom:8px;gap:8px;align-items:flex-end"><div style="flex:none"><label style="margin-top:0">Số KOC hiển thị</label><select id="koccount" style="max-width:110px"><option value="10">10 người</option><option value="20">20 người</option><option value="50">50 người</option></select></div><button class="big sec" id="scrapeTt" onclick="scrapeKOC()" disabled style="flex:1">🤖 Cào KOC/KOL >10K follower đăng hashtag thương hiệu (APIFY) → section "chân dung người dùng thật"</button></div>
   <div id="scrapeStatus" class="muted" style="margin:-2px 0 10px"></div>
   <button class="big sec" id="dlAll" onclick="downloadAll()" disabled>⬇️ Tải DEPLOY KIT (10 LP + script deploy Cloudflare 1-click)</button>
   <div class="lpgrid" id="lpgrid"></div>
@@ -182,7 +182,7 @@ https://www.tiktok.com/@thaivublackbi149/video/7595177869219794194</textarea></d
 
 <script>
 const $=s=>document.querySelector(s);
-let CFG=null, ANGLES=[], UI={}, REF=[], LPS=[], curEdit=-1, UGC=[], ASSETMODE=false;
+let CFG=null, ANGLES=[], UI={}, REF=[], LPS=[], curEdit=-1, UGC=[], ASSETMODE=false, KOC=[];
 try{const k=localStorage.getItem('lpf_key');if(k){$('#key').value=k;$('#remember').checked=true;}}catch(e){}
 $('#remember').addEventListener('change',e=>{try{e.target.checked?localStorage.setItem('lpf_key',$('#key').value):localStorage.removeItem('lpf_key');}catch(_){}});
 function slug(s){return (s||'img').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'x';}
@@ -380,13 +380,31 @@ async function buildAll(){
 // ---- video embeds ----
 function ytId(u){const m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);return m?m[1]:null;}
 function ttId(u){const m=u.match(/video\/(\d+)/);return m?m[1]:null;}
+var TTHUMB={};
+async function enrichVideos(){
+  var todo=[],seen={};
+  function add(u){var t=ttId(u);if(t&&!TTHUMB[t]&&!seen[t]){seen[t]=1;todo.push({t:t,u:u});}}
+  (LPS||[]).forEach(function(lp){(lp.videos||'').split(/[\n,]+/).forEach(function(u){u=u.trim();if(u)add(u);});});
+  if(!todo.length)return;
+  await Promise.all(todo.map(function(x){return fetch('https://www.tiktok.com/oembed?url='+encodeURIComponent(x.u)).then(function(r){return r.ok?r.json():null;}).then(function(j){if(j&&(j.thumbnail_url||j.author_name))TTHUMB[x.t]={cover:j.thumbnail_url||'',author:j.author_name||''};}).catch(function(){});}));
+}
 function videoEmbeds(links){const arr=(links||'').split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);if(!arr.length)return '';
-  return arr.map(u=>{var y=ytId(u),t=ttId(u),embed='',poster='',ratio='9/16';
+  return arr.map(u=>{var y=ytId(u),t=ttId(u),embed='',poster='',ratio='9/16',author='';
     if(y){embed='https://www.youtube.com/embed/'+y+'?autoplay=1&rel=0';poster='https://img.youtube.com/vi/'+y+'/hqdefault.jpg';ratio='16/9';}
-    else if(t){embed='https://www.tiktok.com/embed/v2/'+t;ratio='9/16';}
-    if(embed)return '<div class="vslide vcard" onclick="openVid(\''+embed+'\',\''+ratio+'\')"><div class="vthumb'+(poster?'':' nopo')+'"'+(poster?(' style="background-image:url('+poster+')"'):'')+'><span class="vplay">▶</span>'+(poster?'':'<span class="vlbl">▶ Xem review</span>')+'</div></div>';
+    else if(t){embed='https://www.tiktok.com/embed/v2/'+t;ratio='9/16';if(TTHUMB[t]){poster=TTHUMB[t].cover||'';author=TTHUMB[t].author||'';}}
+    if(embed)return '<div class="vslide vcard" onclick="openVid(\''+embed+'\',\''+ratio+'\')"><div class="vthumb'+(poster?'':' nopo')+'"'+(poster?(' style="background-image:url('+esc(poster)+')"'):'')+'><span class="vplay">▶</span>'+(author?('<span class="vlbl">@'+esc(author)+'</span>'):(poster?'':'<span class="vlbl">▶ Xem review</span>'))+'</div></div>';
     return '<div class="vslide"><a href="'+esc(u)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;background:var(--s2);border-radius:14px;color:var(--acc)">▶ Xem video</a></div>';
   }).join('');}
+function kocFans(n){n=+n||0;if(n>=1000000)return (n/1000000).toFixed(1).replace(/\.0$/,'')+'M';if(n>=1000)return Math.round(n/1000)+'K';return ''+n;}
+function kocCards(n){
+  var list=(KOC||[]).slice(0,n||10);if(!list.length)return '';
+  return list.map(function(k){
+    var t=ttId(k.url)||'';var embed=t?('https://www.tiktok.com/embed/v2/'+t):'';
+    var cover=k.cover||(TTHUMB[t]&&TTHUMB[t].cover)||'';
+    var av='<span class="kocav kocavf" style="background:'+avatarColor(k.nick||k.handle)+'">'+esc(avInitial(k.nick||k.handle))+(k.avatar?('<img src="'+esc(k.avatar)+'" loading="lazy" onerror="this.remove()">'):'')+'</span>';
+    return '<div class="vslide kocard" onclick="openVid(\''+embed+'\',\'9/16\')"><div class="vthumb'+(cover?'':' nopo')+'"'+(cover?(' style="background-image:url('+esc(cover)+')"'):'')+'><span class="vplay">▶</span><span class="kocfans">⭐ '+kocFans(k.fans)+'</span></div><div class="kocmeta">'+av+'<div class="kocwho"><b>@'+esc(k.nick||k.handle||'koc')+'</b><span>'+kocFans(k.fans)+' follower'+(k.plays?(' · '+kocFans(k.plays)+' view'):'')+'</span></div></div></div>';
+  }).join('');
+}
 
 // ---- render LP (srcOf: key -> img src) ----
 function L(k,fb){return (UI[k]&&String(UI[k]).trim())||fb;}
@@ -426,29 +444,25 @@ async function scrapeHashtag(token,tags,limit,onstatus){
   }
   if(status!=='SUCCEEDED')throw new Error('run '+status+(msg?(' — '+msg):''));
   var items=await apifyReq(A+'/datasets/'+dsId+'/items?'+tok+'&clean=true&limit='+limit);
-  var seen={},out=[];(items||[]).forEach(function(it){var u=it.webVideoUrl||it.videoUrl||'';if(u&&!seen[u]){seen[u]=1;out.push(u);}});
+  var seen={},out=[];(items||[]).forEach(function(it){var u=it.webVideoUrl||it.videoUrl||it.submittedVideoUrl||'';if(!u||seen[u])return;seen[u]=1;var am=it.authorMeta||{},vm=it.videoMeta||{};out.push({url:u,id:(it.id||ttId(u)||''),cover:vm.coverUrl||vm.originalCoverUrl||(Array.isArray(it.covers)?it.covers[0]:'')||it.coverUrl||'',nick:am.nickName||am.name||am.uniqueId||'',handle:am.name||am.uniqueId||'',fans:+(am.fans||am.followers||0)||0,avatar:am.avatar||am.avatarThumb||'',plays:+(it.playCount||0)||0});});
   return out;
 }
-async function scrapeTikTok(){
+function kocCount(){var e=$('#koccount');return Math.max(1,parseInt(e&&e.value)||10);}
+async function scrapeKOC(){
   if(!CFG||!LPS.length){alert('Hãy bấm "AI thiết kế Landing Page" trước.');return;}
   var token=(CFG&&CFG.apify)||($('#apify')&&$('#apify').value.trim());
   if(!token){alert('Nhập APIFY API token ở Bước 1 (ô "APIFY API token") trước.');return;}
-  var tags=ttHashtags();
+  var tags=ttHashtags(),want=kocCount();
   var btn=$('#scrapeTt'),st=$('#scrapeStatus');if(btn)btn.disabled=true;
-  if(st)st.innerHTML='Cào TikTok theo hashtag #'+tags.join(' #')+' — khởi tạo run...';
+  if(st)st.innerHTML='Cào KOC/KOL #'+tags.join(' #')+' (>10K follower) — khởi tạo run...';
   try{
-    var want=Math.min(80,Math.max(20,LPS.length*8));
-    var links=await scrapeHashtag(token,tags,want,function(status,sec,msg){if(st)st.innerHTML='Cào #'+tags.join(' #')+' — '+status+' '+sec+'s'+(msg?(' · '+String(msg).slice(0,80)):'');});
-    if(!links.length){if(st)st.innerHTML='<span style="color:var(--bad)">Không có video cho hashtag #'+tags.join(' #')+'. Thử hashtag khác (ô "Hashtag cào TikTok") hoặc kiểm tra credit APIFY.</span>';if(btn)btn.disabled=false;return;}
-    var per=Math.max(5,Math.min(8,Math.ceil(links.length/LPS.length)));
-    for(var i=0;i<LPS.length;i++){
-      var out=[],start=(i*per)%links.length;
-      for(var j=0;j<per*2&&out.length<per;j++){var u=links[(start+j)%links.length];if(out.indexOf(u)<0)out.push(u);}
-      LPS[i].videos=out.join('\n');
-      var stt=$('#lpst'+i);if(stt)stt.textContent='TikTok: '+out.length+' video';
-      var ta=document.getElementById('ed_videos_'+i);if(ta)ta.value=LPS[i].videos;
-    }
-    if(st)st.innerHTML='<span style="color:var(--acc)">✓ Cào '+links.length+' video #'+tags.join(' #')+' → chia cho '+LPS.length+' LP (~'+per+'/LP). Bấm Preview/Tải để áp dụng.</span>';
+    var fetchN=Math.min(200,Math.max(40,want*4));
+    var items=await scrapeHashtag(token,tags,fetchN,function(status,sec,msg){if(st)st.innerHTML='Cào #'+tags.join(' #')+' — '+status+' '+sec+'s'+(msg?(' · '+String(msg).slice(0,80)):'');});
+    var byAuthor={};(items||[]).forEach(function(o){if((o.fans||0)<10000)return;var key=o.handle||o.nick||o.url;if(!byAuthor[key]||(o.plays||0)>(byAuthor[key].plays||0))byAuthor[key]=o;});
+    KOC=Object.keys(byAuthor).map(function(k){return byAuthor[k];}).sort(function(a,b){return (b.fans||0)-(a.fans||0);});
+    if(!KOC.length){if(st)st.innerHTML='<span style="color:var(--bad)">Không tìm thấy KOC/KOL >10K follower cho #'+tags.join(' #')+'. Thử hashtag khác (ô "Hashtag cào TikTok") hoặc kiểm tra credit APIFY.</span>';if(btn)btn.disabled=false;return;}
+    if(st)st.innerHTML='<span style="color:var(--acc)">✓ Tìm thấy '+KOC.length+' KOC/KOL >10K follower (#'+tags.join(' #')+'). Hiển thị '+Math.min(want,KOC.length)+' người/LP. Bấm Preview/Tải để xem section "Chân dung người dùng thật".</span>';
+    for(var i=0;i<LPS.length;i++){var stt=$('#lpst'+i);if(stt&&stt.textContent.indexOf('✓')<0)stt.textContent='KOC: '+KOC.length;}
   }catch(e){if(st)st.innerHTML='<span style="color:var(--bad)">Lỗi: '+((e&&e.message)||e)+'<br>Kiểm tra token + credit/trial actor <b>clockworks/tiktok-scraper</b> (apify.com → Store → Start free trial).</span>';}
   if(btn)btn.disabled=false;
 }
@@ -474,6 +488,8 @@ function renderLP(lp,srcOf){
   const SCENTHTML=SC.length?`<section class="band center" style="padding-bottom:2px"><span class="eyebrow">${esc((UI.sec_choose)||'Tầng hương')}</span><h2>Mỗi tầng hương, một câu chuyện</h2><p class="mut">👆 Chạm vào mỗi hương để cảm nhận trọn vẹn</p></section>${SC.map((s,i)=>`<section class="band storybeat scent-beat reveal${(_beats.length+i)%2?' rev':''}" onclick="openScent(${i})"><div class="sbimg">${s.img?`<img src="${s.img}" loading="lazy" alt="${esc(s.name||('scent'+(i+1)))}">`:`<div class="noimg" style="aspect-ratio:4/5;border-radius:16px">scent ${i+1}</div>`}</div><div class="sbtext"><span class="eyebrow">Tầng hương ${i+1}</span><p class="sbline lead">${esc(s.name||'')}</p>${s.story?`<p class="sbline">${esc(s.story)}</p>`:''}${s.payoff?`<p class="sbline mut">“${esc(s.payoff)}”</p>`:''}<span class="scent-cta">Chạm để cảm nhận tầng hương ›</span></div></section>`).join('')}`:`<section class="scent-strip">${['scent1','scent2','scent3'].map((k,i)=>`<figure><img src="${S(k,'4/5')}" loading="lazy" onerror="this.style.opacity=.15"><figcaption>${esc((RS[i]&&RS[i].t)||['Juicy','Beachy','Milky'][i])}</figcaption></figure>`).join('')}</section>`;
   const vids=videoEmbeds(lp.videos);
   const vidsec=vids?`<section class="band"><span class="eyebrow">${L('sec_video','Review thật từ KOC')}</span><h2>${L('sec_video','Review thật từ KOC')}</h2><div class="vcaro">${vids}</div></section>`:'';
+  const koc=kocCards(kocCount());
+  const kocSec=koc?`<section class="band"><span class="eyebrow">${esc(L('sec_koc','Chân dung người dùng thật'))}</span><h2>${esc(L('sec_koc_h','KOC/KOL đã tin dùng & chia sẻ'))}</h2><p class="mut">${KOC.length}+ nhà sáng tạo TikTok hơn 10K follower nói về ${esc(C.brand||'sản phẩm')}</p><div class="vcaro koccaro">${koc}</div></section>`:'';
   const SK=skinTokens(C.skin,acc,acc2);
   const css=LPCSS.replace(/__BG__/g,SK.bg).replace(/__S1__/g,SK.s1).replace(/__S2__/g,SK.s2).replace(/__LINE__/g,SK.line).replace(/__ACC__/g,SK.acc).replace(/__ACC2__/g,SK.acc2);
   const unit=parseInt((C.pnew||'').replace(/[^0-9]/g,''))||0,fmtv=n=>(n||0).toLocaleString('vi-VN')+(C.curr||'đ');
@@ -494,6 +510,7 @@ ${scene('before','4/5','TRƯỚC', esc(L('before','Trước khi dùng')), esc(L(
 ${ST.length?`<section class="band"><div class="stats">${ST.map(s=>`<div class="stat"><div class="n"${(s.count!=null&&s.count!=='')?` data-count="${s.count}"${s.dec?` data-dec="${s.dec}"`:''}${s.suf?` data-suf="${esc(s.suf)}"`:''}`:''}>${(s.count!=null&&s.count!=='')?'0':esc(s.val||'')}</div><div class="l">${esc(s.label||'')}</div></div>`).join('')}</div></section>`:''}
 ${(C.compare&&C.compare.rows&&C.compare.rows.length)?`<section class="band cmp reveal"><h2>${esc(C.compare.title||'So sánh')}</h2><div class="cmptbl"><div class="cmphd"><div class="cmpc lab"></div><div class="cmpc us">${esc(C.compare.headus||C.brand)}</div><div class="cmpc them">${esc(C.compare.headthem||'Khác')}</div></div>${C.compare.rows.map(r=>`<div class="cmprow"><div class="cmpc lab">${esc(r.label||'')}</div><div class="cmpc us"><span class="ck">✓</span><span>${esc(r.us||'')}</span></div><div class="cmpc them"><span class="cx">✕</span><span>${esc(r.them||'')}</span></div></div>`).join('')}</div></section>`:''}
 <section id="reviews" class="band">${hdr(L('sec_proof_fallback','Khách nói gì'), esc(a.proof||L('sec_proof_fallback','Khách nói gì')))}<div class="rate"><div class="sc">4.9</div><div class="stars">★★★★★</div></div><div class="caro">${testi}</div>${C.pvideo?`<div class="sp"></div>${ytEmbed(C.pvideo)}`:''}${ugc?`<div class="sp"></div><div class="ugc-caro">${ugc}</div>`:''}</section>
+${kocSec}
 ${vidsec}
 ${scene('closing','4/5',esc(L('sec_story','Câu chuyện thật')), esc(cs.n||'')+(cs.m?', '+esc(cs.m):''), '"'+esc(cs.q||'')+'"','bottom')}
 <section id="offer" class="band center">${hdr(L('urgency_h','Ưu đãi có hạn'), L('urgency_h','Ưu đãi có hạn'))}<div class="cd"><div class="u"><div class="n" id="cd-h">22</div></div><div class="u"><div class="n" id="cd-m">00</div></div><div class="u"><div class="n" id="cd-s">00</div></div></div><div class="value"><div class="vr"><span>${esc(C.pold)}</span><span class="save">${esc(C.pnew)}</span></div><div class="vr tot"><span>Tiết kiệm</span><span class="save">${esc(C.psave)}</span></div></div></section>
@@ -516,7 +533,7 @@ function srcData(lp){return k=>lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):n
 function srcAsset(lp){return k=>lp.b64[k]?lp.slots[k].name:null;}
 
 // ---- preview ----
-function preview(i){const lp=LPS[i];const html=renderLP(lp,srcData(lp));const m=$('#modal');$('#modalbody').innerHTML='<h2 style="margin-bottom:8px">Preview: '+esc(lp.a.slug)+'</h2><iframe class="prev" id="pvf" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';m.style.display='flex';const f=$('#pvf');
+async function preview(i){const lp=LPS[i];try{await enrichVideos();}catch(e){}const html=renderLP(lp,srcData(lp));const m=$('#modal');$('#modalbody').innerHTML='<h2 style="margin-bottom:8px">Preview: '+esc(lp.a.slug)+'</h2><iframe class="prev" id="pvf" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';m.style.display='flex';const f=$('#pvf');
   try{if(window._pvUrl)URL.revokeObjectURL(window._pvUrl);window._pvUrl=URL.createObjectURL(new Blob([html],{type:'text/html'}));f.src=window._pvUrl;}catch(e){f.srcdoc=html;}}
 
 // ---- editor ----
@@ -705,8 +722,8 @@ function policyPages(C){
   var tt='<h1>Chính sách thanh toán</h1><p>Chúng tôi hỗ trợ COD (thanh toán khi nhận hàng) và chuyển khoản VietQR. Thông tin chuyển khoản hiển thị khi đặt hàng; vui lòng ghi đúng nội dung để hệ thống xác nhận tự động.</p><h2>Hoàn tiền</h2><p>Hoàn tiền với đơn lỗi hoặc không giao được, theo chính sách đổi trả.</p>';
   return {'chinh-sach-bao-mat.html':W('Chính sách bảo mật',bm),'dieu-khoan-su-dung.html':W('Điều khoản sử dụng',dk),'chinh-sach-thanh-toan.html':W('Chính sách thanh toán',tt)};
 }
-async function downloadLP(i){const lp=LPS[i];const zip=new JSZip();ASSETMODE=true;zip.file('index.html',renderLP(lp,srcAsset(lp)));ASSETMODE=false;const pp=policyPages(CFG);Object.keys(pp).forEach(fn=>zip.file(fn,pp[fn]));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});UGC.forEach((u,idx)=>{if(u.b64)as.file('ugc-'+idx+'.jpg',u.b64,{base64:true});});(CFG.bundles||[]).forEach((b,idx)=>{if(b.giftImg)as.file('gift-'+idx+'.jpg',b.giftImg,{base64:true});});if(lp.a.ads&&lp.a.ads.length){zip.file('ads.json',JSON.stringify(adsJson(lp),null,2));adImagesToZip(zip.folder('ad-images'),lp);}dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
-async function downloadAll(){const zip=new JSZip();const site=zip.folder('site');ASSETMODE=true;var pp=policyPages(CFG);LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));Object.keys(pp).forEach(fn=>f.file(fn,pp[fn]));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});UGC.forEach((u,idx)=>{if(u.b64)as.file('ugc-'+idx+'.jpg',u.b64,{base64:true});});(CFG.bundles||[]).forEach((b,idx)=>{if(b.giftImg)as.file('gift-'+idx+'.jpg',b.giftImg,{base64:true});});if(lp.a.ads&&lp.a.ads.length){f.file('ads.json',JSON.stringify(adsJson(lp),null,2));adImagesToZip(f.folder('ad-images'),lp);}});ASSETMODE=false;var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
+async function downloadLP(i){const lp=LPS[i];try{await enrichVideos();}catch(e){}const zip=new JSZip();ASSETMODE=true;zip.file('index.html',renderLP(lp,srcAsset(lp)));ASSETMODE=false;const pp=policyPages(CFG);Object.keys(pp).forEach(fn=>zip.file(fn,pp[fn]));const as=zip.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});UGC.forEach((u,idx)=>{if(u.b64)as.file('ugc-'+idx+'.jpg',u.b64,{base64:true});});(CFG.bundles||[]).forEach((b,idx)=>{if(b.giftImg)as.file('gift-'+idx+'.jpg',b.giftImg,{base64:true});});if(lp.a.ads&&lp.a.ads.length){zip.file('ads.json',JSON.stringify(adsJson(lp),null,2));adImagesToZip(zip.folder('ad-images'),lp);}dl(await zip.generateAsync({type:'blob'}),(lp.a.slug||('lp'+i))+'.zip');}
+async function downloadAll(){try{await enrichVideos();}catch(e){}const zip=new JSZip();const site=zip.folder('site');ASSETMODE=true;var pp=policyPages(CFG);LPS.forEach((lp,i)=>{const f=site.folder(lp.a.slug||('lp'+i));f.file('index.html',renderLP(lp,srcAsset(lp)));Object.keys(pp).forEach(fn=>f.file(fn,pp[fn]));const as=f.folder('assets');Object.keys(lp.slots).forEach(k=>{if(lp.b64[k])as.file(lp.slots[k].name.replace('assets/',''),lp.b64[k],{base64:true});});UGC.forEach((u,idx)=>{if(u.b64)as.file('ugc-'+idx+'.jpg',u.b64,{base64:true});});(CFG.bundles||[]).forEach((b,idx)=>{if(b.giftImg)as.file('gift-'+idx+'.jpg',b.giftImg,{base64:true});});if(lp.a.ads&&lp.a.ads.length){f.file('ads.json',JSON.stringify(adsJson(lp),null,2));adImagesToZip(f.folder('ad-images'),lp);}});ASSETMODE=false;var proj=((CFG.brand||'lp').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'lp').slice(0,40);
 zip.file('deploy.ps1',['param([string]$Project="'+proj+'")','$ErrorActionPreference="Stop"','if(-not (Get-Command wrangler -ErrorAction SilentlyContinue)){ Write-Host "Cai wrangler..."; npm i -g wrangler }','Write-Host "Neu chua login: chay  wrangler login"','wrangler pages project create $Project --production-branch=main 2>$null','wrangler pages deploy "$PSScriptRoot\\site" --project-name=$Project','Write-Host "XONG -> https://$Project.pages.dev/<ten-lp>/"'].join('\r\n'));
 zip.file('deploy.bat',['@echo off','powershell -ExecutionPolicy Bypass -File "%~dp0deploy.ps1"','pause'].join('\r\n'));
 zip.file('deploy.sh',['#!/usr/bin/env bash','set -e','PROJECT="${1:-'+proj+'}"','command -v wrangler >/dev/null || npm i -g wrangler','wrangler pages project create "$PROJECT" --production-branch=main 2>/dev/null || true','wrangler pages deploy "$(cd "$(dirname "$0")" && pwd)/site" --project-name="$PROJECT"','echo "XONG -> https://$PROJECT.pages.dev/"'].join('\n'));
@@ -801,6 +818,7 @@ body{background:#06070a}
 .smodal .snav{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.smodal .sarrow{width:40px;height:40px;border-radius:50%;background:var(--s2);border:1px solid var(--line);color:var(--ink);font-size:20px;cursor:pointer}.smodal .sdots{display:flex;gap:7px}.smodal .sdots i{width:8px;height:8px;border-radius:50%;background:var(--line);display:inline-block}.smodal .sdots i.on{background:var(--acc)}
 .smodal .sbox.in .simg img,.smodal .sbox.in .sinfo{animation:sfade .4s ease}@keyframes sfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .vcard{cursor:pointer}.vthumb{position:relative;aspect-ratio:9/16;border-radius:14px;background-size:cover;background-position:center;background-color:var(--s2);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line)}.vthumb.nopo{background:linear-gradient(160deg,var(--s2),color-mix(in srgb,var(--acc) 22%,var(--s2)))}.vthumb .vplay{width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;padding-left:4px;transition:transform .2s}.vcard:active .vthumb .vplay{transform:scale(.9)}.vthumb .vlbl{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:#fff}
+.koccaro .kocard{flex:0 0 62%;max-width:230px}.kocard{cursor:pointer}.kocard .kocfans{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.62);color:#fff;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:99px}.kocmeta{display:flex;align-items:center;gap:8px;margin-top:8px}.kocav{width:32px;height:32px;flex:none;border-radius:50%;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;border:1px solid var(--line)}.kocav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.kocwho{min-width:0}.kocwho b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kocwho span{font-size:11px;color:var(--mut)}
 .ugc-caro img{cursor:zoom-in}
 .lbx{position:fixed;inset:0;z-index:130;background:rgba(4,6,10,.93);display:none;align-items:center;justify-content:center;padding:20px}.lbx.open{display:flex}.lbx img{max-width:100%;max-height:90vh;border-radius:12px;display:none}.lbx .lb_vid{display:none;width:100%;max-width:420px}.lbx.r169 .lb_vid{max-width:780px}.lbx .lb_vid iframe{width:100%;aspect-ratio:9/16;border:0;border-radius:14px;background:#000}.lbx.r169 .lb_vid iframe{aspect-ratio:16/9}.lbx .lbclose{position:absolute;top:14px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;border:0;font-size:18px;cursor:pointer;z-index:2}
 .offerbox{background:linear-gradient(160deg,color-mix(in srgb,var(--acc) 14%,var(--s1)),var(--s1));border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);border-radius:16px;padding:14px 16px;margin:4px 0 14px}.offerbox .offh{font-weight:900;font-size:15px;margin-bottom:8px}.offlist{list-style:none;margin:0;padding:0;display:grid;gap:6px}.offlist li{font-size:13.5px;color:#e6ebf2;padding-left:22px;position:relative}.offlist li:before{content:"✓";position:absolute;left:0;color:var(--acc);font-weight:900}
