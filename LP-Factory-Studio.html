@@ -166,7 +166,10 @@ https://www.tiktok.com/@thaivublackbi149/video/7595177869219794194</textarea></d
   <div id="guideStatus" class="muted" style="margin-top:4px"></div>
   <label>Brand Visual DNA (EN) — để trống AI tự tạo</label>
   <textarea id="dna" style="min-height:46px"></textarea>
-  <button class="sec" id="coreviralBtn" onclick="coreviralEngine()" style="margin-top:12px;width:100%">🧠 COREVIRAL Insight Engine — sinh phễu Insight-Sale 5 lớp + bộ từ khóa 9 nhóm + góc nội dung thắng → nạp vào SEED</button>
+  <label style="margin-top:12px">🎥 Video viral tham chiếu (COREVIRAL bước 5–6) — mỗi dòng 1 link; dán kèm transcript/mô tả nếu có để AI phân tích chính xác</label>
+  <textarea id="cvVideos" style="min-height:54px" placeholder="https://www.tiktok.com/@.../video/... — (mô tả/transcript ngắn nếu có)&#10;https://www.douyin.com/video/... — thử thách ở quán net, ai bắn đủ mạng nhận thưởng"></textarea>
+  <button class="sec" id="cvVideoBtn" onclick="coreviralFromVideos()" style="margin-top:8px;width:100%">🎥 Phân tích video viral → nâng cấp thành insight cho sản phẩm → nạp SEED</button>
+  <button class="sec" id="coreviralBtn" onclick="coreviralEngine()" style="margin-top:8px;width:100%">🧠 COREVIRAL Insight Engine — sinh phễu Insight-Sale 5 lớp + bộ từ khóa 9 nhóm + góc nội dung thắng → nạp vào SEED</button>
   <button class="big" id="genCfg" onclick="genConfigs()" style="margin-top:10px">🤖 AI thiết kế Landing Page (đa ngôn ngữ)</button>
   <div class="bar"><i id="prog1"></i></div><div id="st1" class="muted"></div>
 </div>
@@ -403,6 +406,42 @@ function coreviralApplySeed(){
   $('#modal').style.display='none';
   $('#st1').innerHTML='<span style="color:var(--acc)">✓ Đã nạp '+window.SEED.length+' winning insight (COREVIRAL) vào SEED. Bấm "AI thiết kế Landing Page" để sinh '+window.SEED.length+' LP.</span>';
   try{$('#genCfg').scrollIntoView({behavior:'smooth',block:'center'});}catch(_){}
+}
+// ---- COREVIRAL bước 5-6: phân tích video viral tham chiếu → nâng cấp thành insight cho sản phẩm ----
+async function coreviralFromVideos(){
+  const key=$('#key').value.trim(), tmodel=$('#tmodel').value.trim()||'gemini-2.5-pro';
+  if(!key){alert('Nhập Gemini API key ở Bước 0 trước');return;}
+  const raw=($('#cvVideos')&&$('#cvVideos').value.trim())||'';
+  if(!raw){alert('Dán ít nhất 1 link video viral (kèm transcript/mô tả nếu có) vào ô phía trên.');return;}
+  const lang=$('#lang').value, brand=$('#brand').value.trim(), product=$('#product').value.trim();
+  const audience=$('#audience').value.trim(), goal=$('#goal').value, msg=$('#msg').value.trim();
+  const pdetail=($('#pdetail')&&$('#pdetail').value.trim())||'';
+  const btn=$('#cvVideoBtn'); btn.disabled=true; const _t=btn.textContent; btn.textContent='🎥 Đang phân tích & nâng cấp…';
+  const sys=`You are a COREVIRAL content analyst. Apply COREVIRAL step 6 (PHÂN TÍCH & LIÊN KẾT) to the reference viral videos provided. For EACH video: pinpoint the EXACT viral factor (hook, format, emotional trigger, structure) — be specific, NOT generic. Then UPGRADE it into a sellable content angle for OUR product, preserving the proven winning format but tying it to the product's benefit/insight. Write ALL customer-facing text in ${lang}. Use the link's visible context + any transcript/notes the user pasted; if a video has no notes, infer its likely winning format from the URL/handle and label assumptions. Return ONLY valid JSON:
+{"analyses":[{"source":"<link or short ref>","viral_factor":"<the specific element that made it viral, ${lang}>","format":"<cách thể hiện: thử thách/thử nghiệm/xếp hạng/chấm điểm/reaction/POV tình huống/so sánh/review/kể chuyện>"}],
+"winning_insights":[{"title":"","format":"<same taxonomy>","insight":"<the upgraded video idea for OUR product: relatable insight ('đúng là mình') + the concrete winning-format execution that sells it>","message":"<key message>","audience":"<who>"}]}
+Output one winning_insight per reference video (in order). Keep formats diverse and faithful to each source's winning mechanic.`;
+  const user=`OUR BRAND: ${brand}. OUR PRODUCT: ${product}. CAMPAIGN GOAL: ${goal}. KEY MESSAGE: ${msg||'(infer)'}. TARGET AUDIENCE: ${audience||'(infer)'}.
+${pdetail? 'PRODUCT DETAILS: '+pdetail : ''}
+REFERENCE VIRAL VIDEOS (one per line, may include transcript/notes after a dash):
+${raw}`;
+  try{
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${tmodel}:generateContent?key=${encodeURIComponent(key)}`;
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:sys+"\n\n"+user}]}],generationConfig:{responseMimeType:"application/json",temperature:0.8}})});
+    const j=await res.json(); if(!res.ok) throw new Error((j.error&&j.error.message)||('HTTP '+res.status));
+    let txt=j.candidates[0].content.parts.map(p=>p.text||'').join('').replace(/^```json/i,'').replace(/```$/,'').trim();
+    const d=JSON.parse(txt); const wi=d.winning_insights||[]; window.__cvWI=wi;
+    const an=(d.analyses||[]).map((a,i)=>'<div class="edrow"><div style="font-weight:800;color:var(--acc);font-size:12.5px">'+(i+1)+'. '+esc(a.source||'')+' <span style="background:rgba(124,196,255,.15);border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px">'+esc(a.format||'')+'</span></div><div style="font-size:12.5px;margin-top:3px">⚡ '+esc(a.viral_factor||'')+'</div></div>').join('');
+    const wiHtml=wi.map((w,i)=>'<div class="edrow"><div style="font-weight:800;color:var(--acc);font-size:13px">'+(i+1)+'. '+esc(w.title||'')+' <span style="background:rgba(124,196,255,.15);border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px">'+esc(w.format||'')+'</span></div><div style="font-size:12.5px;margin-top:3px">'+esc(w.insight||'')+'</div><div class="muted" style="font-size:11.5px;margin-top:2px">🎯 '+esc(w.message||'')+' · 👥 '+esc(w.audience||'')+'</div></div>').join('');
+    $('#modalbody').innerHTML='<h2 style="margin-bottom:6px">🎥 Phân tích video viral → Insight (COREVIRAL 5–6)</h2>'
+      +'<div style="max-height:62vh;overflow:auto;padding-right:6px">'
+      +_g('⚡ Yếu tố viral của từng video',an,true)
+      +_g('🎬 Insight nâng cấp cho sản phẩm ('+wi.length+')',wiHtml,true)
+      +'</div>'
+      +'<button class="big" onclick="coreviralApplySeed()" style="margin-top:12px">⬇️ Nạp '+wi.length+' insight này vào SEED → sinh '+wi.length+' Landing Page</button>';
+    $('#modal').style.display='flex';
+  }catch(e){alert('Lỗi phân tích video: '+e.message);}
+  btn.disabled=false; btn.textContent=_t;
 }
 async function genConfigs(){
   CFG={key:$('#key').value.trim(),tmodel:$('#tmodel').value.trim(),imodel:$('#imodel').value.trim(),lang:$('#lang').value,curr:$('#curr').value.trim(),brand:$('#brand').value.trim(),product:$('#product').value.trim(),pold:$('#pold').value.trim(),pnew:$('#pnew').value.trim(),psave:$('#psave').value.trim(),pixel:$('#pixel').value.trim(),ttpixel:$('#ttpixel').value.trim(),sheet:$('#sheet').value.trim(),company:$('#company').value.trim(),cemail:$('#cemail').value.trim(),hotline:$('#hotline').value.trim(),address:$('#address').value.trim(),mst:$('#mst').value.trim(),dna:$('#dna').value.trim(),guide:$('#guide').value.trim(),pdetail:($('#pdetail')&&$('#pdetail').value.trim())||'',goal:$('#goal').value,msg:$('#msg').value.trim(),audience:$('#audience').value.trim(),skin:($('#skin')&&$('#skin').value)||'default',imgStyle:($('#imgstyle')&&$('#imgstyle').value)||'product',compactText:((($('#textmode')&&$('#textmode').value)||'compact')==='compact'),pvideo:($('#pvideo')&&$('#pvideo').value.trim())||'',apify:($('#apify')&&$('#apify').value.trim())||'',httag:($('#tthashtag')&&$('#tthashtag').value.trim())||'',n:Math.max(1,Math.min(20,parseInt($('#nangle').value)||6))};
