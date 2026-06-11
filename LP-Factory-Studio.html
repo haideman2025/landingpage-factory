@@ -44,8 +44,26 @@ iframe.prev{width:100%;height:720px;border:1px solid var(--line);border-radius:1
 .edrow{border:1px dashed var(--line);border-radius:8px;padding:6px 4px;margin:8px 12px}.edrow input,.edrow textarea{margin:5px 8px;width:calc(100% - 16px)}.edrow .row input{margin:5px 4px}
 .edx{margin:6px 8px;padding:5px 10px;font-size:12px;background:rgba(255,107,107,.15);color:#ff9b9b;border:1px solid rgba(255,107,107,.3)}.eddef{font-size:12px;color:var(--mut);display:inline-flex;align-items:center;gap:5px;margin:6px 8px}.eddef input{margin:0;width:auto}
 </style></head>
-<body><div class="wrap">
-<h1>🏭 LP Factory Studio <span style="font-size:13px;color:var(--acc)">v5</span></h1>
+<body>
+<div id="lpf-gate" style="display:none;position:fixed;inset:0;z-index:10000;background:#0a0d12;color:#e6edf3;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:sans-serif;text-align:center;padding:20px">
+  <h2 style="margin:0">🏭 Đăng nhập LP Factory</h2>
+  <p style="color:#8b98a5;margin:0;max-width:420px">Lưu &amp; xem lại toàn bộ dữ liệu tạo sinh trên tài khoản của bạn — không lo mất khi đổi máy.</p>
+  <button id="lpf-google" style="padding:11px 20px;border-radius:8px;border:1px solid #2a313a;background:#fff;color:#111;cursor:pointer;font-weight:700">Đăng nhập với Google</button>
+  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center">
+    <input id="lpf-email" type="email" placeholder="email@cua-ban.com" style="padding:10px;border-radius:8px;border:1px solid #2a313a;background:#0f141a;color:#e6edf3">
+    <button id="lpf-emailbtn" style="padding:10px 14px;border-radius:8px;border:1px solid #2a313a;background:#1f6feb;color:#fff;cursor:pointer">Gửi magic link</button>
+  </div>
+  <div id="lpf-emailmsg" style="color:#8b98a5;font-size:13px"></div>
+</div>
+<div class="wrap">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+  <h1 style="margin:0">🏭 LP Factory Studio <span style="font-size:13px;color:var(--acc)">v5</span></h1>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="lpf-savestatus" style="font-size:12px;color:#8b98a5"></span>
+    <button class="sec" id="lpf-historybtn" style="padding:7px 11px;font-size:13px">🗂️ Lịch sử</button>
+    <button class="sec" id="lpf-signout" style="padding:7px 11px;font-size:13px">Đăng xuất <span id="lpf-who" style="color:var(--mut)"></span></button>
+  </div>
+</div>
 <div class="sub">Ý tưởng/script win → AI viết copy đa ngôn ngữ theo brand guideline → tạo ảnh (Nano Banana Pro 2) → <b style="color:var(--acc)">mỗi LP kèm 1 Ad Pack (5 bộ Meta/TikTok ad + ảnh quảng cáo tối ưu mobile, preview mockup Facebook ngay trong app)</b> → sửa copy/ảnh từng section + carousel video KOC → preview → tải ZIP deploy Cloudflare.</div>
 
 <div class="card"><h2><span class="step">0</span> Cấu hình AI Studio</h2>
@@ -184,8 +202,20 @@ https://www.tiktok.com/@thaivublackbi149/video/7595177869219794194</textarea></d
 <script>
 const $=s=>document.querySelector(s);
 let CFG=null, ANGLES=[], UI={}, REF=[], LPS=[], curEdit=-1, UGC=[], ASSETMODE=false, KOC=[];
+// ---- account/autosave bridge (lpf-account.js reads/writes runtime state via these) ----
+window.__lpfState = () => ({ CFG, ANGLES, UI, LPS, UGC });
+window.__lpfRestore = (s) => {
+  CFG = s.CFG; ANGLES = s.ANGLES; UI = s.UI; LPS = s.LPS; UGC = s.UGC;
+  try { $('#genImg').disabled = !(LPS && LPS.length); } catch (_) {}
+  try { renderLPgrid(); } catch (_) {}
+  try { renderTplBar(); } catch (_) {}
+  try { renderUgc(); } catch (_) {}
+};
+window.__lpfDirty = () => { try { window.LPFAccount && window.LPFAccount.scheduleSave && window.LPFAccount.scheduleSave(); } catch (_) {} };
 try{const k=localStorage.getItem('lpf_key');if(k){$('#key').value=k;$('#remember').checked=true;}}catch(e){}
-$('#remember').addEventListener('change',e=>{try{e.target.checked?localStorage.setItem('lpf_key',$('#key').value):localStorage.removeItem('lpf_key');}catch(_){}});
+$('#remember').addEventListener('change',e=>{try{e.target.checked?localStorage.setItem('lpf_key',$('#key').value):localStorage.removeItem('lpf_key');}catch(_){}
+  try{ if(window.LPFAccount && e.target.checked) window.LPFAccount.saveKey($('#key').value.trim()); }catch(_){}
+});
 function slug(s){return (s||'img').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)||'x';}
 function rconf(r){return ({'4/5':'4:5','16/9':'16:9','1/1':'1:1','9/16':'9:16'})[r]||'1:1';}
 function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -403,7 +433,7 @@ WINNING IDEA/SCRIPT:\n${$('#idea').value.trim()||'(empty — infer from product)
     var _seed=(($('#seedvideos')&&$('#seedvideos').value)||'').split(/[\n,]+/).map(function(s){return s.trim();}).filter(Boolean);
     if(_seed.length){var _per=Math.max(3,Math.min(8,Math.ceil(_seed.length/Math.max(1,LPS.length))));LPS.forEach(function(lp,i){var out=[],start=(i*_per)%_seed.length;for(var j=0;j<_seed.length&&out.length<_per;j++){var u=_seed[(start+j)%_seed.length];if(out.indexOf(u)<0)out.push(u);}lp.videos=out.join('\n');});}
     $('#prog1').style.width='100%';$('#st1').innerHTML=`<b style="color:var(--acc)">Đã thiết kế ${ANGLES.length} LP (${CFG.lang}).</b> Sang bước 2 tạo ảnh.`;
-    $('#genImg').disabled=false; var _s=$('#scrapeTt');if(_s)_s.disabled=false; renderLPgrid();
+    $('#genImg').disabled=false; var _s=$('#scrapeTt');if(_s)_s.disabled=false; renderLPgrid(); window.__lpfDirty();
   }catch(e){$('#st1').innerHTML='<span style="color:var(--bad)">Lỗi: '+e.message+'</span>';}
   $('#genCfg').disabled=false;
 }
@@ -620,7 +650,7 @@ function edExtras(i){var a=LPS[i].a,h='';
  return h;}
 function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed.style.display='block';
   const tf=(label,key,ml)=>`<label>${label}</label><textarea data-f="${key}" style="${ml?'min-height:'+ml+'px':''}" oninput="LPS[${i}].a['${key}']=this.value">${esc(a[key]||'')}</textarea>`;
-  let imgs='';Object.keys(lp.slots).forEach(k=>{const s=lp.slots[k];const src=lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):'';imgs+=`<div class="imgcell"><div class="k">${k} (${s.ratio})</div>${src?`<img src="${src}" id="im_${i}_${k}">`:`<div style="aspect-ratio:1/1;background:#0a0d12;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:11px;text-align:center;padding:6px">chưa tạo ảnh<br>(sửa mô tả → Tạo lại ảnh)</div>`}<textarea oninput="LPS[${i}].slots['${k}'].scene=this.value;LPS[${i}].slots['${k}'].prompt=P(this.value,'${s.ratio}',${s.prod},${!!s.fp},LPS[${i}].slots['${k}'].shot,${!!s.atmos})">${esc(s.scene)}</textarea><button class="sec" style="width:100%;margin-top:4px;padding:6px;font-size:12px" onclick="regen(${i},'${k}',this)">Tạo lại ảnh</button></div>`;});
+  let imgs='';Object.keys(lp.slots).forEach(k=>{const s=lp.slots[k];const src=lp.b64[k]?('data:image/jpeg;base64,'+lp.b64[k]):'';imgs+=`<div class="imgcell"><div class="k">${k} (${s.ratio})</div>${src?`<img src="${src}" id="im_${i}_${k}">`:`<div style="aspect-ratio:1/1;background:#0a0d12;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:11px;text-align:center;padding:6px">chưa tạo ảnh<br>(sửa mô tả → Tạo lại ảnh)</div>`}<textarea oninput="LPS[${i}].slots['${k}'].scene=this.value;LPS[${i}].slots['${k}'].prompt=P(this.value,'${s.ratio}',${s.prod},${!!s.fp},LPS[${i}].slots['${k}'].shot,${!!s.atmos});window.__lpfDirty()">${esc(s.scene)}</textarea><button class="sec" style="width:100%;margin-top:4px;padding:6px;font-size:12px" onclick="regen(${i},'${k}',this)">Tạo lại ảnh</button></div>`;});
   ed.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:16px">✏️ Sửa LP: ${esc(a.slug)}</h2><button class="sec" onclick="document.getElementById('editor').style.display='none'">Đóng</button></div>
   <div class="ed-grid" style="margin-top:10px">
    <div>${tf('Eyebrow','ey')}${tf('H1 (có thể chứa &lt;span class=hl&gt;)','h1',60)}${tf('Sub','sub',60)}${tf('Tiêu đề giải pháp','stitle')}${tf('Mô tả giải pháp','slead',60)}${tf('Câu agitate (nỗi đau)','agitq',54)}${tf('Proof heading','proof')}${tf('CTA cuối - tiêu đề','ft')}${tf('CTA cuối - phụ đề','fs')}
@@ -632,7 +662,7 @@ function openEditor(i){curEdit=i;const lp=LPS[i],a=lp.a;const ed=$('#editor');ed
   <div class="rowb" style="display:flex;gap:8px;margin-top:14px"><button onclick="preview(${i})" class="big sec" style="flex:1">👁 Preview</button><button onclick="downloadLP(${i})" class="big" style="flex:1">⬇️ Tải LP này</button></div>`;
   ed.scrollIntoView({behavior:'smooth'});
 }
-async function regen(i,k,btn){btn.disabled=true;btn.textContent='...';try{const lp=LPS[i];lp.b64[k]=await genImage(lp.slots[k].prompt,lp.slots[k].ratio);const im=$('#im_'+i+'_'+k);if(im)im.src='data:image/jpeg;base64,'+lp.b64[k];btn.textContent='✓';}catch(e){btn.textContent='lỗi';}setTimeout(()=>{btn.disabled=false;btn.textContent='Tạo lại ảnh';},1200);}
+async function regen(i,k,btn){btn.disabled=true;btn.textContent='...';try{const lp=LPS[i];lp.b64[k]=await genImage(lp.slots[k].prompt,lp.slots[k].ratio);const im=$('#im_'+i+'_'+k);if(im)im.src='data:image/jpeg;base64,'+lp.b64[k];btn.textContent='✓';window.__lpfDirty();}catch(e){btn.textContent='lỗi';}setTimeout(()=>{btn.disabled=false;btn.textContent='Tạo lại ảnh';},1200);}
 
 // ---- AD PACK (5 Meta/TikTok ad creatives per LP) ----
 const AD_MOCKUP_CSS=".fbwrap{display:flex;flex-direction:column;gap:16px}.fbad{background:#fff;color:#050505;border:1px solid #dadde1;border-radius:10px;overflow:hidden;font-family:Helvetica,Arial,sans-serif;max-width:380px;margin:0 auto;width:100%}.fbhd{display:flex;align-items:center;gap:8px;padding:10px 12px}.fbav{width:40px;height:40px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;font-size:18px}.fbmeta{flex:1;line-height:1.25}.fbmeta b{display:block;font-size:14px;color:#050505}.fbmeta span{font-size:12px;color:#65676b}.fbdot{color:#65676b;font-size:18px}.fbtext{padding:0 12px 10px;font-size:14px;line-height:1.4;color:#050505;white-space:pre-wrap}.fbimg{background:#000;line-height:0}.fbimg img{display:block;width:100%}.fbph{aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;color:#fff;background:#3a3b3c;font-size:13px;text-align:center;padding:20px;line-height:1.4}.fbcard{display:flex;align-items:center;gap:10px;background:#f0f2f5;padding:10px 12px;border-top:1px solid #dadde1}.fbcardL{flex:1;min-width:0}.fbdomain{font-size:12px;color:#65676b;text-transform:uppercase}.fbhl{font-size:15px;font-weight:700;color:#050505;line-height:1.25}.fbdesc{font-size:13px;color:#65676b}.fbcta{flex:none;background:#e4e6eb;color:#050505;font-weight:700;font-size:13px;padding:9px 14px;border-radius:6px;white-space:nowrap;text-decoration:none}.fbactions{display:flex;justify-content:space-around;padding:8px 0;border-top:1px solid #dadde1;color:#65676b;font-size:13px;font-weight:600}.fbcopy{display:flex;gap:6px;padding:8px 12px;background:#fff;border-top:1px solid #eee;flex-wrap:wrap}.fbcopy button{flex:1;min-width:88px;padding:7px;font-size:12px;background:#1d242f;color:#eef2f7;border:1px solid #28303d;border-radius:8px;cursor:pointer;font-weight:700}.adcopybox{max-width:380px;width:100%;margin:-8px auto 0;background:#fff;border:1px solid #dadde1;border-top:0;border-radius:0 0 10px 10px;padding:10px 12px;font-size:12.5px}.adcopybox h4{margin:8px 0 3px;font-size:11px;color:#65676b;text-transform:uppercase}.adcopybox pre{white-space:pre-wrap;font-family:inherit;margin:0;color:#050505;background:#f0f2f5;padding:8px;border-radius:6px}.adpickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}.adpick{position:relative;border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;display:block}.adpick img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}.adpick span{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.adpick input{position:absolute;top:4px;left:4px;width:18px;height:18px;z-index:2;cursor:pointer}.adpick.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}";
@@ -927,5 +957,62 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLb();})
 function sel(r){var q=r.getAttribute('data-q'),p=+r.getAttribute('data-p')||0,og=+r.getAttribute('data-orig')||0,blab=r.getAttribute('data-label')||'',gift=r.getAttribute('data-gift')||'';var pn=(typeof PRODNAME!=='undefined'?PRODNAME:'sản phẩm');if(f.qty)f.qty.value=q;if(f.bval)f.bval.value=p;var t=document.getElementById('ordtotv');if(t)t.textContent=fm(p);var qq=document.getElementById('ordtotq');if(qq)qq.textContent=q;var it=document.getElementById('ossItem');if(it)it.innerHTML='<span>'+(blab?('📦 '+blab+' — '):'')+q+'× '+pn+'</span><span>'+fm(p)+'</span>';var gf=document.getElementById('ossGift');if(gf){gf.innerHTML=gift?('🎁 '+gift):'';gf.style.display=gift?'':'none';}var sv=document.getElementById('ossSave');if(sv){if(og>p){sv.innerHTML='Giá gốc <s>'+fm(og)+'</s> · Tiết kiệm '+fm(og-p);sv.style.display='';}else{sv.style.display='none';}}var sp=document.getElementById('stkp');if(sp)sp.textContent=fm(p);var so=document.getElementById('stko');if(so){if(og>p){so.textContent=fm(og);so.style.display='';}else{so.style.display='none';}}var ls=document.querySelectorAll('#order .bnd');for(var i=0;i<ls.length;i++)ls[i].classList.remove('on');var lab=r.closest?r.closest('.bnd'):r.parentNode;if(lab&&lab.classList)lab.classList.add('on');}
 for(var i=0;i<bs.length;i++)bs[i].addEventListener('change',(function(r){return function(){sel(r);};})(bs[i]));
 var c=document.querySelector('#order input[name=bundle]:checked')||bs[0];if(c){c.checked=true;sel(c);}})();`;
+</script>
+
+<!-- ===== Account + auto-save + History (Supabase) ===== -->
+<div id="lpf-history" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(5,8,12,.95);color:#e6edf3;overflow:auto;padding:24px;font-family:sans-serif">
+  <div style="display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto 16px">
+    <h2 style="margin:0">🗂️ Lịch sử dự án</h2>
+    <button class="sec" id="lpf-history-close" style="padding:7px 12px">✕ Đóng</button>
+  </div>
+  <div id="lpf-usage" style="max-width:1100px;margin:0 auto 12px;font-size:13px;color:#8b98a5"></div>
+  <div id="lpf-history-grid" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="/src/client/lpf-account.js"></script>
+<script>
+(function(){
+  function on(id,ev,fn){var el=document.getElementById(id);if(el)el.addEventListener(ev,fn);}
+  on('lpf-google','click',function(){window.LPFAccount&&window.LPFAccount.signInGoogle();});
+  on('lpf-emailbtn','click',async function(){
+    var email=(document.getElementById('lpf-email').value||'').trim();
+    var msg=document.getElementById('lpf-emailmsg');
+    if(!email){msg.textContent='Nhập email trước.';return;}
+    var err=await window.LPFAccount.signInEmail(email);
+    msg.textContent=err?('Lỗi: '+err):'Đã gửi link đăng nhập tới email của bạn — mở email để vào.';
+  });
+  on('lpf-signout','click',function(){window.LPFAccount&&window.LPFAccount.signOut();});
+  var histEl=document.getElementById('lpf-history');
+  on('lpf-history-close','click',function(){histEl.style.display='none';});
+  on('lpf-historybtn','click',async function(){await renderHistory();histEl.style.display='block';});
+  function fmtMB(b){return (b/1048576).toFixed(0)+'MB';}
+  async function renderHistory(){
+    var grid=document.getElementById('lpf-history-grid');
+    var usage=document.getElementById('lpf-usage');
+    grid.innerHTML='Đang tải…';
+    try{
+      var u=await window.LPFAccount.storageUsage();
+      var pct=Math.min(100,Math.round(u.used/u.quota*100));
+      usage.innerHTML='Dung lượng: <b>'+fmtMB(u.used)+' / '+fmtMB(u.quota)+'</b> ('+pct+'%)'+(pct>=85?' — <span style="color:#f85149">gần đầy, hãy tải về &amp; xoá bớt</span>':'');
+      var list=await window.LPFAccount.listProjects();
+      if(!list.length){grid.innerHTML='<p style="color:#8b98a5">Chưa có dự án nào. Tạo LP rồi nó sẽ tự lưu vào đây.</p>';return;}
+      grid.innerHTML='';
+      list.forEach(function(p){
+        var card=document.createElement('div');
+        card.style.cssText='border:1px solid #2a313a;border-radius:10px;padding:10px;background:#0f141a';
+        card.innerHTML='<div style="font-weight:700;margin-bottom:4px">'+((p.product||p.title||'Untitled'))+'</div>'
+          +'<div style="font-size:12px;color:#8b98a5">'+((p.brand||''))+' · '+new Date(p.updated_at).toLocaleString()+'</div>'
+          +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
+          +'<button class="sec h-open" style="padding:6px 10px;font-size:12px">Mở</button>'
+          +'<button class="sec h-dup" style="padding:6px 10px;font-size:12px">Nhân bản</button>'
+          +'<button class="sec h-del" style="padding:6px 10px;font-size:12px;color:#f85149">Xoá</button></div>';
+        card.querySelector('.h-open').addEventListener('click',async function(){try{await window.LPFAccount.openProject(p.id);histEl.style.display='none';}catch(e){alert('Lỗi mở: '+e.message);}});
+        card.querySelector('.h-dup').addEventListener('click',async function(){try{await window.LPFAccount.duplicateProject(p.id);await renderHistory();}catch(e){alert('Lỗi nhân bản: '+e.message);}});
+        card.querySelector('.h-del').addEventListener('click',async function(){if(confirm('Xoá dự án này? Ảnh trên Storage cũng bị xoá để giải phóng dung lượng.')){try{await window.LPFAccount.deleteProject(p.id);await renderHistory();}catch(e){alert('Lỗi xoá: '+e.message);}}});
+        grid.appendChild(card);
+      });
+    }catch(e){grid.innerHTML='Lỗi: '+e.message;}
+  }
+})();
 </script>
 </body></html>
