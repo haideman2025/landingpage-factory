@@ -102,11 +102,21 @@ RLS bật trên tất cả bảng; policy SELECT/INSERT/UPDATE/DELETE đều rà
 
 ## 9. Màn hình Lịch sử (Dashboard)
 
+- **Panel ngay trong `LP-Factory-Studio.html`** (đã chốt — tái dùng state/JS sẵn có), mở bằng nút
+  "Lịch sử" trên header; không tách trang riêng.
 - View danh sách project: thẻ (thumbnail = ảnh hero, title, brand, số LP, thời gian sửa) +
   hành động: **Mở** (nạp vào Studio), **Tải ZIP**, **Nhân bản**, **Xoá**.
 - "Mở" = nạp `config` + khôi phục ảnh từ Storage → Studio render & sửa & tải bình thường.
-- Có thể là panel trong cùng `LP-Factory-Studio.html` hoặc trang `dashboard.html` riêng
-  (quyết định lúc viết plan; ưu tiên panel để tái dụng state/JS sẵn có).
+
+### Quản lý dung lượng (đã chốt)
+
+Giai đoạn này **không** tự nén ảnh hay tự dọn project cũ. Khi gần đầy, người dùng tự
+**tải hết về rồi xoá trên app** để lấy chỗ cho project mới. Để hỗ trợ luồng này:
+
+- **Thanh dung lượng** trong panel Lịch sử: đã dùng / hạn mức (vd "780MB / 1GB") + cảnh báo khi gần đầy.
+- **Tải hết về**: nút tải toàn bộ (mỗi project một ZIP, hoặc gộp) trước khi xoá.
+- **Xoá**: xoá project → xoá luôn file Storage tương ứng để thực sự giải phóng dung lượng
+  (xác nhận trước khi xoá).
 
 ## 10. Bảo mật
 
@@ -133,3 +143,4 @@ GitHub đã connect sẵn (origin trỏ về repo) → commit code mới trực 
 - Cộng tác nhiều người trên cùng project / phân quyền team.
 - Export Google Drive (đã có scope, làm sau).
 - Versioning/lịch sử chỉnh sửa từng project (chỉ giữ bản mới nhất ở giai đoạn này).
+- Tự nén ảnh / tự dọn project cũ khi đầy (người dùng tự tải về + xoá thủ công).
